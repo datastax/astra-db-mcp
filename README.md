@@ -4,6 +4,10 @@ A Model Context Protocol (MCP) server for interacting with Astra DB. MCP extends
 
 ## Prerequisites
 
+#### Node.js
+This project requires Node.js. Please ensure you [have the latest version installed](https://nodejs.org/en/download).
+
+#### Astra DB
 You need to have a running Astra DB database. If you don't have one, you can create a free database [here](https://astra.datastax.com/register). From there, you can get two things you need:
 
 1. An Astra DB Application Token
