@@ -2,6 +2,10 @@
 
 A Model Context Protocol (MCP) server for interacting with Astra DB. MCP extends the capabilities of Large Language Models (LLMs) by allowing them to interact with external systems as agents.
 
+<a href="https://glama.ai/mcp/servers/tigix0yf4b">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/tigix0yf4b/badge" alt="Astra DB Server MCP server" />
+</a>
+
 ## Prerequisites
 
 You need to have a running Astra DB database. If you don't have one, you can create a free database [here](https://astra.datastax.com/register). From there, you can get two things you need:
