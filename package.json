@@ -33,5 +33,6 @@
     "rimraf": "^6.0.1",
     "typescript": "^5.8.2",
     "vitest": "^1.6.1"
-  }
+  },
+  "license": "Apache-2.0"
 }
