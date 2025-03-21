@@ -40,13 +40,28 @@ To add this to [Claude Desktop](https://www.anthropic.com/news/claude-desktop), 
 }
 ```
 
+**Windows PowerShell Users:**
+`npx` is a batch command so modify the JSON as follows:
+
+```json
+  "command": "cmd",
+  "args": ["/k", "npx", "-y", "@datastax/astra-db-mcp"], 
+```
+
 ### Cursor
 
 ![Cursor](https://github.com/datastax/astra-db-mcp/raw/main/docs/img/cursor-settings.png)
 
 To add this to [Cursor](https://www.cursor.com/), go to Settings -> Cursor Settings -> MCP
 
-From there, you can add the server by clicking the "+ Add New MCP Server" button and entering the following values:
+From there, you can add the server by clicking the "+ Add New MCP Server" button, where you should be brought to an `mcp.json` file. 
+
+> **Tip**: there is a `~/.cursor/mcp.json` that represents your Global MCP settings, and a project-specific `.cursor/mcp.json` file 
+> that is specific to the project. You probably want to install this MCP server into the project-specific file.
+
+Add the same JSON as indiciated in the Claude Desktop instructions. 
+
+Alternatively you may be presented with a wizard, where you can enter the following values (for Unix-based systems):
 
 - Name: Whatever you want
 - Type: Command
