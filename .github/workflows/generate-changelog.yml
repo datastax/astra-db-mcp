@@ -1,0 +1,35 @@
+# @author Madhavan Sridharan
+name: Generate Changelog PR
+
+# runs on
+# * pushing new tag with 'v' prefix
+# * manual trigger
+on:
+  push:
+    tags:
+      - 'v*'
+
+# global env vars, available in all jobs and steps
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  # creates a PR for updating changelog
+  create-changelog-pr:
+    name: Create a PR with updated changelog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate changelog
+        continue-on-error: true
+        run: ./update_changelog.sh
+
+      - name: Version bump PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${GITHUB_TOKEN}
+          commit-message: "Update changelog for a new version release"
+          title: "Update changelog for a new version release"
+          branch-suffix: "short-commit-hash"
+          base: "main"

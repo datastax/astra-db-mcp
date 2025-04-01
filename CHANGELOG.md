@@ -1,14 +1,25 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## [Unreleased](https://github.com/datastax/astra-db-mcp/tree/HEAD)
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.1.0...HEAD)
 
-## [1.1.0] - 2024-03-19
+**Implemented enhancements:**
+
+- Created Estimated Document Count Tool [\#8](https://github.com/datastax/astra-db-mcp/pull/8) ([shiragannavar](https://github.com/shiragannavar))
+
+**Merged pull requests:**
+
+- Adds glama.json file to allow us to claim the server on Glama [\#6](https://github.com/datastax/astra-db-mcp/pull/6) ([philnash](https://github.com/philnash))
+- add instructions for PowerShell and more details on Cursor [\#5](https://github.com/datastax/astra-db-mcp/pull/5) ([mieslep](https://github.com/mieslep))
+- Adds Apache 2.0 license [\#4](https://github.com/datastax/astra-db-mcp/pull/4) ([philnash](https://github.com/philnash))
+- Add MCP server badge [\#3](https://github.com/datastax/astra-db-mcp/pull/3) ([punkpeye](https://github.com/punkpeye))
+
+## [v1.1.0](https://github.com/datastax/astra-db-mcp/tree/v1.1.0) (2025-03-26)
+
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.0.3...v1.1.0)
 
 ### Added
-
 - Bulk operations support for AI agents
   - Ability to perform bulk create, update, and delete operations in a single shot
   - Optimized performance for large-scale data operations (e.g., inserting 1000s of records)
@@ -16,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added interactive browser-based authentication flow
   - Automatic guidance through Astra DB signup process when credentials are missing
   - Better error handling and user feedback
+
 - Enhanced documentation
   - Added Windows PowerShell-specific instructions
   - Updated available tools documentation
@@ -26,7 +38,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling for authentication failures
 - Enhanced user guidance during setup process
 
-### Credits
+## [v1.0.3](https://github.com/datastax/astra-db-mcp/tree/v1.0.3) (2025-03-05)
 
-- Thanks to @philnash for Apache-2.0 license contribution
-- Thanks to @mieslep for Windows PowerShell documentation improvements
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.0.2...v1.0.3)
+
+## [v1.0.2](https://github.com/datastax/astra-db-mcp/tree/v1.0.2) (2025-03-05)
+
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.0.1...v1.0.2)
+
+## [v1.0.1](https://github.com/datastax/astra-db-mcp/tree/v1.0.1) (2025-03-05)
+
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.0.0...v1.0.1)
+
+## [v1.0.0](https://github.com/datastax/astra-db-mcp/tree/v1.0.0) (2025-03-05)
+
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v0.1.1...v1.0.0)
+
+## [v0.1.1](https://github.com/datastax/astra-db-mcp/tree/v0.1.1) (2025-03-05)
+
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v0.1.0...v0.1.1)
+
+## [v0.1.0](https://github.com/datastax/astra-db-mcp/releases/tag/v0.1.0) (2025-03-05)
+Initial release

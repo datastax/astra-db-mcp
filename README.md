@@ -23,7 +23,7 @@ Here's how you can add this server to your MCP client.
 
 ![Claude Desktop](https://github.com/datastax/astra-db-mcp/raw/main/docs/img/claude-settings.png)
 
-To add this to [Claude Desktop](https://www.anthropic.com/news/claude-desktop), go to Preferences -> Developer -> Edit Config and add this JSON blob to `claude_desktop_config.json`:
+To add this to [Claude Desktop](https://claude.ai/download), go to Preferences -> Developer -> Edit Config and add this JSON blob to `claude_desktop_config.json`:
 
 ```json
 {
@@ -92,4 +92,14 @@ The server provides the following tools for interacting with Astra DB:
 - `BulkDeleteRecords`: Delete multiple records from a collection at once
 - `OpenBrowser`: Open a web browser for authentication and setup
 - `HelpAddToClient`: Get assistance with adding Astra DB client to your MCP client
-- `EstimateDocumentCount`: Get estimate of the number of documents in a collection.
+- `EstimateDocumentCount`: Get estimate of the number of documents in a collection
+
+## Changelog
+All notable changes to this project will be documented in [this file](./CHANGELOG.md).
+The format is based on [Keep a Changelog](https://keepachangelog.com), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## ❤️ Contributors
+
+[![astra-db-mcp contributors](https://contrib.rocks/image?repo=datastax/astra-db-mcp)](https://github.com/datastax/astra-db-mcp/graphs/contributors)
+
+---
