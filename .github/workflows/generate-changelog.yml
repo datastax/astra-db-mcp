@@ -3,9 +3,11 @@ name: Generate Changelog PR
 
 # runs on
 # * pushing new tag with 'v' prefix
-# * manual trigger
+# * for 'main' branch
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
@@ -28,8 +30,10 @@ jobs:
       - name: Version bump PR
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${GITHUB_TOKEN}
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Update changelog for a new version release"
           title: "Update changelog for a new version release"
           branch-suffix: "short-commit-hash"
           base: "main"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,8 @@
 # @author Madhavan Sridharan
-name: Prepare Version Tag
+name: Prepare new tag & changelog PR
 
+# runs on
+# * manually triggered
 on:
   workflow_dispatch:
     inputs:
@@ -14,13 +16,22 @@ on:
           - minor
           - major
 
+# global env vars, available in all jobs and steps
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
-  tag:
+  new_tag_and_changelog:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -34,8 +45,44 @@ jobs:
 
       - name: Create version bump branch
         id: create_branch
+        # --no-git-tag-version ensures we control when tags are pushed
         run: |
           git fetch origin main
           git checkout -b release/bump-tag-version origin/main
-          npm version ${{ github.event.inputs.release_type }} -m "chore(release): bump tag version to %s"
-          git push origin -u release/bump-tag-version --follow-tags
+          npm version ${{ github.event.inputs.release_type }} -m "chore(release): bump tag version to %s" --no-git-tag-version
+        # --follow-tags is not used when pushing the branch in the next step since we're using --no-git-tag-version here
+
+      - name: Commit version bump
+        run: |
+          git add package.json
+          git commit -m "chore(release): bump tag version to $(jq -r .version package.json)" || echo "No changes to commit"
+          git push origin release/bump-tag-version
+
+      # - name: Configure Git credentials
+      #   run: |
+      #     git config --global url."https://github.com/".insteadOf "git@github.com:"
+      #     git config --global credential.helper store
+
+      # - name: Debug Git state
+      #   run: |
+      #     git remote -v
+      #     git branch
+      #     git config --list
+
+      - name: Generate changelog
+        continue-on-error: true
+        run: ./update_changelog.sh
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        env:
+          GITHUB_TOKEN:
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "release/bump-tag-version"
+          branch-suffix: "short-commit-hash"
+          base: "main"
+          title: "chore(release): Bump tag version and update changelog"
+          body: |
+            This pull request bumps the tag version as part of the release process.
+            Please review and merge.

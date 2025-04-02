@@ -1,8 +1,13 @@
 # @author Madhavan Sridharan
 name: Publish to npm
 
+# runs on
+# * pushing new tag with 'v' prefix
+# * for 'main' branch
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*.*.*' # Trigger only on version tags like v1.0.0
 
