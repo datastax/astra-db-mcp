@@ -6,14 +6,20 @@
 
 **Implemented enhancements:**
 
+- A bunch of GHA workflows,scripts to automate [\#9](https://github.com/datastax/astra-db-mcp/pull/9) ([msmygit](https://github.com/msmygit))
 - Created Estimated Document Count Tool [\#8](https://github.com/datastax/astra-db-mcp/pull/8) ([shiragannavar](https://github.com/shiragannavar))
+
+**Closed issues:**
+
+- Claude desktop app URL changed [\#2](https://github.com/datastax/astra-db-mcp/issues/2)
 
 **Merged pull requests:**
 
+- Bump esbuild from 0.21.5 to 0.25.2 [\#10](https://github.com/datastax/astra-db-mcp/pull/10) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Adds glama.json file to allow us to claim the server on Glama [\#6](https://github.com/datastax/astra-db-mcp/pull/6) ([philnash](https://github.com/philnash))
 - add instructions for PowerShell and more details on Cursor [\#5](https://github.com/datastax/astra-db-mcp/pull/5) ([mieslep](https://github.com/mieslep))
 - Adds Apache 2.0 license [\#4](https://github.com/datastax/astra-db-mcp/pull/4) ([philnash](https://github.com/philnash))
-- Add MCP server badge [\#3](https://github.com/datastax/astra-db-mcp/pull/3) ([punkpeye](https://github.com/punkpeye))
+- add MCP server badge [\#3](https://github.com/datastax/astra-db-mcp/pull/3) ([punkpeye](https://github.com/punkpeye))
 
 ## [v1.1.0](https://github.com/datastax/astra-db-mcp/tree/v1.1.0) (2025-03-26)
 
@@ -59,4 +65,3 @@
 [Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v0.1.0...v0.1.1)
 
 ## [v0.1.0](https://github.com/datastax/astra-db-mcp/releases/tag/v0.1.0) (2025-03-05)
-Initial release
