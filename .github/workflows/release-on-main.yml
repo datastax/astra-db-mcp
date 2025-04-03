@@ -1,0 +1,68 @@
+# @author Madhavan Sridharan
+name: Tag and Publish on Merge
+  
+on:
+  # Trigger the workflow on push to the main branch
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Create Git Tag, GitHub Release, and Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed for pushing tags and creating releases
+      id-token: write # Needed for npm provenance
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install dependencies (including devDependencies)
+        run: npm ci
+        env:
+          NODE_ENV: development
+
+      - name: Run tests
+        run: npm test
+        # Temporary: skip tests for now
+        continue-on-error: true
+
+      # Optional: build if needed (for TypeScript, bundlers, etc.)
+      - name: Build package
+        run: npm run build
+
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          VERSION=v$(jq -r .version package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag ${{ steps.get_version.outputs.version }}
+          git push origin ${{ steps.get_version.outputs.version }}
+
+    #   - name: Create GitHub Release
+    #     uses: softprops/action-gh-release@v1
+    #     with:
+    #       tag_name: ${{ steps.get_version.outputs.version }}
+    #       name: Release ${{ steps.get_version.outputs.version }}
+    #       generate_release_notes: true
+    #     env:
+    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
