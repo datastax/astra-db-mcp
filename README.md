@@ -40,6 +40,17 @@ To add this to [Claude Desktop](https://claude.ai/download), go to Preferences -
 }
 ```
 
+**Optional Keyspace Configuration:**
+By default, this server uses the keyspace configured in the underlying Astra DB library (typically `default_keyspace`). If you need to connect to a specific keyspace, you can add the `ASTRA_DB_KEYSPACE` variable to the `env` object above, like so:
+
+```json
+"env": {
+  "ASTRA_DB_APPLICATION_TOKEN": "your_astra_db_token",
+  "ASTRA_DB_API_ENDPOINT": "your_astra_db_endpoint",
+  "ASTRA_DB_KEYSPACE": "your_desired_keyspace"
+}
+```
+
 **Windows PowerShell Users:**
 `npx` is a batch command so modify the JSON as follows:
 
@@ -70,6 +81,8 @@ Alternatively you may be presented with a wizard, where you can enter the follow
 ```sh
 env ASTRA_DB_APPLICATION_TOKEN=your_astra_db_token ASTRA_DB_API_ENDPOINT=your_astra_db_endpoint npx -y @datastax/astra-db-mcp
 ```
+
+*Note: `ASTRA_DB_KEYSPACE` is optional. If omitted, the default keyspace configured in the Astra DB library will be used.*
 
 Once added, your editor will be fully connected to your Astra DB database.
 
