@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/datastax-astra-db-mcp-badge.png)](https://mseep.ai/app/datastax-astra-db-mcp)
+
 # Astra DB MCP Server
 
 A Model Context Protocol (MCP) server for interacting with Astra DB. MCP extends the capabilities of Large Language Models (LLMs) by allowing them to interact with external systems as agents.
