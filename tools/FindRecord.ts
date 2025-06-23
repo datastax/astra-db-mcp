@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import { db } from "../util/db.js";
+import { sanitizeRecordData } from "../util/sanitize.js";
 
 export async function FindRecord(params: {
   collectionName: string;
@@ -56,12 +57,14 @@ export async function FindRecord(params: {
       const regexQuery: Record<string, any> = {};
       regexQuery[field] = regexPattern;
 
-      return await collection.find(regexQuery).limit(limit).toArray();
+      const results = await collection.find(regexQuery).limit(limit).toArray();
+      return sanitizeRecordData(results);
     } catch (error) {
       console.error("Regex search failed:", error);
       return [];
     }
   }
 
-  return results;
+  // Return sanitized results to prevent prompt injection attacks
+  return sanitizeRecordData(results);
 }

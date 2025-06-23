@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import { db } from "../util/db.js";
+import { sanitizeRecordData } from "../util/sanitize.js";
 
 export async function GetRecord(params: {
   collectionName: string;
@@ -29,5 +30,6 @@ export async function GetRecord(params: {
     );
   }
 
-  return record;
+  // Return sanitized record to prevent prompt injection attacks
+  return sanitizeRecordData(record);
 }
