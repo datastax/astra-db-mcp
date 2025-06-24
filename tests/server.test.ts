@@ -54,7 +54,7 @@ describe("MCP Server", () => {
 
     // Import the server module to trigger the initialization
     // This will execute the code in index.js which sets up the server
-    require("../index.js");
+    import("../build/index.js");
   });
 
   it("should initialize the server with correct configuration", () => {
