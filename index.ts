@@ -37,6 +37,7 @@ import { BulkDeleteRecords } from "./tools/BulkDeleteRecords.js";
 import { OpenBrowser } from "./tools/OpenBrowser.js";
 import { HelpAddToClient } from "./tools/HelpAddToClient.js";
 import { EstimateDocumentCount } from "./tools/EstimateDocumentCount.js";
+import { sanitizeRecordData } from "./util/sanitize.js";
 
 const server = new Server(
   {
@@ -136,11 +137,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           collectionName: args.collectionName as string,
           limit: args.limit as number | undefined,
         });
+        // Sanitize records to prevent prompt injection
+        const sanitizedRecords = sanitizeRecordData(records);
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(records, null, 2),
+              text: JSON.stringify(sanitizedRecords, null, 2),
             },
           ],
         };
@@ -150,11 +153,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           collectionName: args.collectionName as string,
           recordId: args.recordId as string,
         });
+        // Sanitize record to prevent prompt injection
+        const sanitizedRecord = sanitizeRecordData(record);
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(record, null, 2),
+              text: JSON.stringify(sanitizedRecord, null, 2),
             },
           ],
         };
@@ -209,14 +214,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           value: args.value as string,
           limit: args.limit as number | undefined,
         });
+        // Sanitize found records to prevent prompt injection
+        const sanitizedFoundRecords = sanitizeRecordData(foundRecords);
         return {
           content: [
             {
               type: "text",
               text:
-                foundRecords.length === 0
+                sanitizedFoundRecords.length === 0
                   ? "No matching records found."
-                  : JSON.stringify(foundRecords, null, 2),
+                  : JSON.stringify(sanitizedFoundRecords, null, 2),
             },
           ],
         };
