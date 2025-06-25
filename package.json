@@ -24,7 +24,8 @@
     "@datastax/astra-db-ts": "^1.5.0",
     "@modelcontextprotocol/sdk": "^1.6.1",
     "dotenv": "^16.4.7",
-    "jsonschema": "^1.5.0"
+    "jsonschema": "^1.5.0",
+    "mcp-evals": "^1.0.18"
   },
   "devDependencies": {
     "@modelcontextprotocol/inspector": "^0.4.1",
