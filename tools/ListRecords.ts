@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import { db } from "../util/db.js";
+import { sanitizeRecordData } from "../util/sanitize.js";
 
 export async function ListRecords(params: {
   collectionName: string;
@@ -23,5 +24,6 @@ export async function ListRecords(params: {
   const collection = db.collection(collectionName);
   const records = await collection.find({}).limit(limit).toArray();
 
-  return records;
+  // Return sanitized records to prevent prompt injection attacks
+  return sanitizeRecordData(records);
 }
