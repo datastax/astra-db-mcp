@@ -1,12 +1,6 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/datastax-astra-db-mcp-badge.png)](https://mseep.ai/app/datastax-astra-db-mcp)
-
 # Astra DB MCP Server
 
 A Model Context Protocol (MCP) server for interacting with Astra DB. MCP extends the capabilities of Large Language Models (LLMs) by allowing them to interact with external systems as agents.
-
-<a href="https://glama.ai/mcp/servers/tigix0yf4b">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/tigix0yf4b/badge" alt="Astra DB Server MCP server" />
-</a>
 
 ## Prerequisites
 
@@ -126,4 +120,13 @@ OPENAI_API_KEY=your-key  npx mcp-eval evals.ts tools.ts
 
 [![astra-db-mcp contributors](https://contrib.rocks/image?repo=datastax/astra-db-mcp)](https://github.com/datastax/astra-db-mcp/graphs/contributors)
 
+## Badges
+
+<a href="https://glama.ai/mcp/servers/tigix0yf4b">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/tigix0yf4b/badge" alt="Astra DB Server MCP server" />
+</a>
+-
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/datastax-astra-db-mcp-badge.png)](https://mseep.ai/app/datastax-astra-db-mcp)
+-
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/932eb437-ab8e-4cf4-bbb5-1b3dbdb9f0aa)
 ---
