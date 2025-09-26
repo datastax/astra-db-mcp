@@ -31,13 +31,17 @@ import { CreateRecord } from "./tools/CreateRecord.js";
 import { UpdateRecord } from "./tools/UpdateRecord.js";
 import { DeleteRecord } from "./tools/DeleteRecord.js";
 import { FindRecord } from "./tools/FindRecord.js";
+import { FindDistinctValues } from "./tools/FindDistinctValues.js";
 import { BulkCreateRecords } from "./tools/BulkCreateRecords.js";
 import { BulkUpdateRecords } from "./tools/BulkUpdateRecords.js";
 import { BulkDeleteRecords } from "./tools/BulkDeleteRecords.js";
+import { VectorSearch } from "./tools/VectorSearch.js";
+import { HybridSearch } from "./tools/HybridSearch.js";
 import { OpenBrowser } from "./tools/OpenBrowser.js";
 import { HelpAddToClient } from "./tools/HelpAddToClient.js";
 import { EstimateDocumentCount } from "./tools/EstimateDocumentCount.js";
 import { sanitizeRecordData } from "./util/sanitize.js";
+import { AstraError, AstraErrorCode, createErrorFromException } from "./util/errors.js";
 
 const server = new Server(
   {
@@ -82,6 +86,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           collectionName: args.collectionName as string,
           vector: args.vector as boolean | undefined,
           dimension: args.dimension as number | undefined,
+          metric: args.metric as "cosine" | "euclidean" | "dot_product" | undefined,
         });
         return {
           content: [
@@ -228,6 +233,71 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           ],
         };
 
+      case "FindDistinctValues":
+        const distinctValues = await FindDistinctValues({
+          collectionName: args.collectionName as string,
+          field: args.field as string,
+          filter: args.filter as Record<string, any> | undefined,
+        });
+        // Sanitize distinct values to prevent prompt injection
+        const sanitizedDistinctValues = sanitizeRecordData(distinctValues);
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                sanitizedDistinctValues.length === 0
+                  ? "No distinct values found."
+                  : JSON.stringify(sanitizedDistinctValues, null, 2),
+            },
+          ],
+        };
+
+      case "VectorSearch":
+        const vectorSearchResults = await VectorSearch({
+          collectionName: args.collectionName as string,
+          queryVector: args.queryVector as number[],
+          limit: args.limit as number | undefined,
+          minScore: args.minScore as number | undefined,
+          filter: args.filter as Record<string, any> | undefined,
+        });
+        // Sanitize vector search results to prevent prompt injection
+        const sanitizedVectorResults = sanitizeRecordData(vectorSearchResults);
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                sanitizedVectorResults.length === 0
+                  ? "No matching records found."
+                  : JSON.stringify(sanitizedVectorResults, null, 2),
+            },
+          ],
+        };
+
+      case "HybridSearch":
+        const hybridSearchResults = await HybridSearch({
+          collectionName: args.collectionName as string,
+          queryVector: args.queryVector as number[],
+          textQuery: args.textQuery as string,
+          weights: args.weights as { vector: number; text: number } | undefined,
+          limit: args.limit as number | undefined,
+          fields: args.fields as string[] | undefined,
+        });
+        // Sanitize hybrid search results to prevent prompt injection
+        const sanitizedHybridResults = sanitizeRecordData(hybridSearchResults);
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                sanitizedHybridResults.length === 0
+                  ? "No matching records found."
+                  : JSON.stringify(sanitizedHybridResults, null, 2),
+            },
+          ],
+        };
+
       case "BulkCreateRecords":
         const bulkCreateResult = await BulkCreateRecords({
           collectionName: args.collectionName as string,
@@ -305,18 +375,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   } catch (error) {
     console.error("Error executing tool:", error);
 
-    // Check if error is related to API endpoint or missing env vars
-    if (
-      error instanceof Error &&
-      (error.message.includes("ASTRA_DB_API_ENDPOINT") ||
-        error.message.includes("ASTRA_DB_APPLICATION_TOKEN") ||
-        error.message.includes("Invalid URL") ||
-        error.message.includes("Failed to fetch") ||
-        error.message.includes("Network error") ||
-        !process.env.ASTRA_DB_API_ENDPOINT ||
-        !process.env.ASTRA_DB_APPLICATION_TOKEN)
-    ) {
-      // Open browser for configuration
+    // Convert the error to a structured AstraError
+    const astraError = createErrorFromException(error);
+    
+    // Special handling for authentication errors
+    if (astraError.code === AstraErrorCode.AUTH_MISSING_CREDENTIALS) {
       return {
         content: [
           {
@@ -326,14 +389,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         ],
       };
     }
-
-    // For other errors, return the error message
+    
+    // Return a structured error response
     return {
       content: [
         {
           type: "text",
-          text: `Error: ${
-            error instanceof Error ? error.message : String(error)
+          text: `Error [${astraError.code}]: ${astraError.message}${
+            astraError.details ? `\n\nDetails: ${JSON.stringify(astraError.details, null, 2)}` : ""
           }`,
         },
       ],
@@ -343,3 +406,5 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
+
+// Made with Bob

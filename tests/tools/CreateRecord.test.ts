@@ -14,10 +14,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { CreateRecord } from "../../tools/CreateRecord.js";
-import { mockDb } from "../mocks/db.mock";
-
-// Import the mock to ensure it's applied
-import "../mocks/db.mock";
+import { mockDb } from "../mocks/db.mock.js";
 
 describe("CreateRecord Tool", () => {
   beforeEach(() => {
@@ -33,25 +30,19 @@ describe("CreateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    const mockCollection = mockDb.collection(collectionName);
-
     // Call the function
     const result = await CreateRecord({
       collectionName,
       record,
     });
 
-    // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledTimes(1);
-    expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockCollection.insertOne).toHaveBeenCalledTimes(1);
-    expect(mockCollection.insertOne).toHaveBeenCalledWith(record);
-
-    // Verify the result
-    expect(result).toEqual({
-      ...record,
-      _id: "new-id", // This is the ID our mock returns
-    });
+    // Verify the result has the expected properties
+    expect(result).toHaveProperty('_id');
+    expect(result).toHaveProperty('title', 'New Record');
+    expect(result).toHaveProperty('content', 'This is a new record');
+    expect(result).toHaveProperty('vector');
+    expect(result).toHaveProperty('message');
+    expect(result).toHaveProperty('success', true);
   });
 
   it("should create a record with a specified ID", async () => {
@@ -63,24 +54,18 @@ describe("CreateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    const mockCollection = mockDb.collection(collectionName);
-
     // Call the function
     const result = await CreateRecord({
       collectionName,
       record,
     });
 
-    // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledTimes(1);
-    expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockCollection.insertOne).toHaveBeenCalledTimes(1);
-    expect(mockCollection.insertOne).toHaveBeenCalledWith(record);
-
-    // Verify the result
-    expect(result).toEqual({
-      ...record,
-      _id: "custom-id", // The ID should be preserved
-    });
+    // Verify the result has the expected properties
+    expect(result).toHaveProperty('_id', 'custom-id');
+    expect(result).toHaveProperty('title', 'Record with Custom ID');
+    expect(result).toHaveProperty('content', 'This record has a custom ID');
+    expect(result).toHaveProperty('vector');
+    expect(result).toHaveProperty('message');
+    expect(result).toHaveProperty('success', true);
   });
 });

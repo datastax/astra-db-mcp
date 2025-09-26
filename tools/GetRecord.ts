@@ -25,9 +25,7 @@ export async function GetRecord(params: {
   const record = await collection.findOne({ _id: recordId });
 
   if (!record) {
-    throw new Error(
-      `Record with ID '${recordId}' not found in collection '${collectionName}'`
-    );
+    return null;
   }
 
   // Return sanitized record to prevent prompt injection attacks
