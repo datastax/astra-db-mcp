@@ -14,17 +14,26 @@
 
 import { db } from "../util/db.js";
 
+type VectorMetric = "cosine" | "euclidean" | "dot_product";
+
 export async function CreateCollection(params: {
   collectionName: string;
   vector?: boolean;
   dimension?: number;
+  metric?: VectorMetric;
 }) {
-  const { collectionName, vector = true, dimension = 1536 } = params;
+  const { 
+    collectionName, 
+    vector = true, 
+    dimension = 1536,
+    metric = "cosine" as VectorMetric
+  } = params;
 
   if (vector) {
     await db.createCollection(collectionName, {
       vector: {
         dimension: dimension,
+        metric: metric
       },
     });
   } else {
@@ -36,3 +45,5 @@ export async function CreateCollection(params: {
     message: `Collection '${collectionName}' created successfully`,
   };
 }
+
+// Made with Bob

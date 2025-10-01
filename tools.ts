@@ -25,12 +25,15 @@ export type ToolName =
   | "UpdateRecord"
   | "DeleteRecord"
   | "FindRecord"
+  | "FindDistinctValues"
   | "BulkCreateRecords"
   | "BulkUpdateRecords"
   | "BulkDeleteRecords"
   | "OpenBrowser"
   | "HelpAddToClient"
-  | "EstimateDocumentCount";
+  | "EstimateDocumentCount"
+  | "VectorSearch"
+  | "HybridSearch";
 
 type Tool = {
   name: ToolName;
@@ -69,6 +72,12 @@ export const tools: Tool[] = [
             "The dimensions of the vector collection, if vector is true",
           default: 1536,
         },
+        metric: {
+          type: "string",
+          description: "The similarity metric to use for vector search (cosine, euclidean, or dot_product)",
+          default: "cosine",
+          enum: ["cosine", "euclidean", "dot_product"]
+        }
       },
       required: ["collectionName"],
     },
@@ -229,6 +238,28 @@ export const tools: Tool[] = [
     },
   },
   {
+    name: "FindDistinctValues",
+    description: "Find distinct values for a field in a collection",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the collection to search in",
+        },
+        field: {
+          type: "string",
+          description: "Field name to find distinct values for",
+        },
+        filter: {
+          type: "object",
+          description: "Optional filter to apply before finding distinct values",
+        },
+      },
+      required: ["collectionName", "field"],
+    },
+  },
+  {
     name: "BulkCreateRecords",
     description: "Create multiple records in a collection at once",
     inputSchema: {
@@ -303,6 +334,95 @@ export const tools: Tool[] = [
     },
   },
   {
+    name: "VectorSearch",
+    description: "Search for records in a collection using vector similarity",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the collection to search in",
+        },
+        queryVector: {
+          type: "array",
+          description: "The vector to search for similar vectors",
+          items: {
+            type: "number",
+          },
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of records to return",
+          default: 10,
+        },
+        minScore: {
+          type: "number",
+          description: "Minimum similarity score (0.0 to 1.0)",
+          default: 0.0,
+        },
+        filter: {
+          type: "object",
+          description: "Additional filter criteria for the search",
+        },
+      },
+      required: ["collectionName", "queryVector"],
+    },
+  },
+  {
+    name: "HybridSearch",
+    description: "Search for records using both vector similarity and text matching",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the collection to search in",
+        },
+        queryVector: {
+          type: "array",
+          description: "The vector to search for similar vectors",
+          items: {
+            type: "number",
+          },
+        },
+        textQuery: {
+          type: "string",
+          description: "The text query to search for",
+        },
+        weights: {
+          type: "object",
+          description: "Weights for vector and text components",
+          properties: {
+            vector: {
+              type: "number",
+              description: "Weight for vector similarity (0.0 to 1.0)",
+              default: 0.7,
+            },
+            text: {
+              type: "number",
+              description: "Weight for text matching (0.0 to 1.0)",
+              default: 0.3,
+            },
+          },
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of records to return",
+          default: 10,
+        },
+        fields: {
+          type: "array",
+          description: "Fields to search in for text matching",
+          items: {
+            type: "string",
+          },
+          default: ["*"],
+        },
+      },
+      required: ["collectionName", "queryVector", "textQuery"],
+    },
+  },
+  {
     name: "OpenBrowser",
     description: "Open a web browser to a specific URL",
     inputSchema: {
@@ -344,3 +464,5 @@ export const tools: Tool[] = [
   description: string;
   inputSchema: Schema;
 }[];
+
+// Made with Bob

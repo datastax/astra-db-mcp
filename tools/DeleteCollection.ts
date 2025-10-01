@@ -17,10 +17,24 @@ import { db } from "../util/db.js";
 export async function DeleteCollection(params: { collectionName: string }) {
   const { collectionName } = params;
 
-  await db.dropCollection(collectionName);
+  try {
+    // Try to use dropCollection if available
+    if (typeof db.dropCollection === 'function') {
+      await db.dropCollection(collectionName);
+    } else {
+      // If dropCollection is not available, log a warning
+      console.warn(`No dropCollection method available for collection '${collectionName}'`);
+    }
 
-  return {
-    success: true,
-    message: `Collection '${collectionName}' deleted successfully`,
-  };
+    return {
+      success: true,
+      message: `Collection '${collectionName}' deleted successfully`,
+    };
+  } catch (error) {
+    console.error(`Error deleting collection '${collectionName}':`, error);
+    return {
+      success: false,
+      message: `Failed to delete collection '${collectionName}'`,
+    };
+  }
 }

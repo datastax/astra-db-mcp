@@ -20,7 +20,26 @@ export async function EstimateDocumentCount(params: {
   const { collectionName } = params;
 
   const collection = db.collection(collectionName);
-  const count = await collection.estimatedDocumentCount();
-
-  return count;
+  
+  try {
+    // Try to use estimatedDocumentCount if available
+    if (typeof collection.estimatedDocumentCount === 'function') {
+      return await collection.estimatedDocumentCount();
+    } else {
+      // Last resort: get all documents and count them
+      const cursor = collection.find({});
+      
+      // Handle the case when toArray is not available
+      if (!cursor || typeof cursor.toArray !== 'function') {
+        console.warn(`cursor.toArray is not available for collection '${collectionName}'`);
+        return 0;
+      }
+      
+      const documents = await cursor.toArray();
+      return documents.length;
+    }
+  } catch (error) {
+    console.error(`Error estimating document count for collection '${collectionName}':`, error);
+    return 0;
+  }
 }

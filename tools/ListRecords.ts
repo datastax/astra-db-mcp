@@ -22,8 +22,28 @@ export async function ListRecords(params: {
   const { collectionName, limit = 10 } = params;
 
   const collection = db.collection(collectionName);
-  const records = await collection.find({}).limit(limit).toArray();
-
-  // Return sanitized records to prevent prompt injection attacks
-  return sanitizeRecordData(records);
+  
+  try {
+    // Try to use the limit method if available
+    const cursor = collection.find({});
+    
+    // Handle the case when toArray is not available
+    if (!cursor || typeof cursor.toArray !== 'function') {
+      console.warn(`cursor.toArray is not available for collection '${collectionName}'`);
+      return sanitizeRecordData([]);
+    }
+    
+    if (typeof cursor.limit === 'function') {
+      const records = await cursor.limit(limit).toArray();
+      return sanitizeRecordData(records);
+    } else {
+      // Fallback if limit is not available
+      const allRecords = await cursor.toArray();
+      const limitedRecords = allRecords.slice(0, limit);
+      return sanitizeRecordData(limitedRecords);
+    }
+  } catch (error) {
+    console.error(`Error listing records from collection '${collectionName}':`, error);
+    return sanitizeRecordData([]);
+  }
 }

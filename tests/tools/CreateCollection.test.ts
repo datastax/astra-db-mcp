@@ -36,16 +36,15 @@ describe("CreateCollection Tool", () => {
     // Verify the mock was called with correct parameters
     expect(mockDb.createCollection).toHaveBeenCalledTimes(1);
     expect(mockDb.createCollection).toHaveBeenCalledWith("new_collection", {
-      vector: true,
-      dimension: 1536,
+      vector: {
+        dimension: 1536,
+        metric: "cosine"
+      }
     });
 
     // Verify the result
-    expect(result).toEqual({
-      name: "new_collection",
-      vector: true,
-      dimension: 1536,
-    });
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("new_collection");
   });
 
   it("should create a non-vector collection", async () => {
@@ -58,17 +57,12 @@ describe("CreateCollection Tool", () => {
     // Verify the mock was called with correct parameters
     expect(mockDb.createCollection).toHaveBeenCalledTimes(1);
     expect(mockDb.createCollection).toHaveBeenCalledWith(
-      "new_document_collection",
-      {
-        vector: false,
-      }
+      "new_document_collection"
     );
 
     // Verify the result
-    expect(result).toEqual({
-      name: "new_document_collection",
-      vector: false,
-    });
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("new_document_collection");
   });
 
   it("should create a vector collection with custom dimensions", async () => {
@@ -84,16 +78,42 @@ describe("CreateCollection Tool", () => {
     expect(mockDb.createCollection).toHaveBeenCalledWith(
       "custom_vector_collection",
       {
-        vector: true,
-        dimension: 768,
+        vector: {
+          dimension: 768,
+          metric: "cosine"
+        }
       }
     );
 
     // Verify the result
-    expect(result).toEqual({
-      name: "custom_vector_collection",
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("custom_vector_collection");
+  });
+
+  it("should create a vector collection with custom metric", async () => {
+    // Call the function with custom metric
+    const result = await CreateCollection({
+      collectionName: "custom_metric_collection",
       vector: true,
-      dimension: 768,
+      metric: "euclidean",
     });
+
+    // Verify the mock was called with correct parameters
+    expect(mockDb.createCollection).toHaveBeenCalledTimes(1);
+    expect(mockDb.createCollection).toHaveBeenCalledWith(
+      "custom_metric_collection",
+      {
+        vector: {
+          dimension: 1536,
+          metric: "euclidean"
+        }
+      }
+    );
+
+    // Verify the result
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("custom_metric_collection");
   });
 });
+
+// Made with Bob
