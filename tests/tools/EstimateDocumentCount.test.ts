@@ -19,7 +19,7 @@ import { EstimateDocumentCount } from "../../tools/EstimateDocumentCount.js";
 
 // Make TypeScript happy with the mocked module
 const mockDb = db as unknown as {
-  estimatedDocumentCount: ReturnType<typeof vi.fn>;
+  collection: ReturnType<typeof vi.fn>;
 };
   
 describe("EstimateDocumentCount Tool", () => {
@@ -29,16 +29,16 @@ describe("EstimateDocumentCount Tool", () => {
   });
 
   it("should return an estimated document count of the passed collection", async () => {
-    const collectionName = "new_empty_collection1";
+    const collectionName = "test_collection1";
 
     // Call the function
     const result = await EstimateDocumentCount({ collectionName });
 
     // Verify the mock was called
-    expect(mockDb.estimatedDocumentCount).toHaveBeenCalledTimes(1);
-    expect(mockDb.estimatedDocumentCount).toHaveBeenCalledWith(collectionName);
+    expect(mockDb.collection).toHaveBeenCalledTimes(1);
+    expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
 
     // Verify the result
-    expect(result).toEqual([0]);
+    expect(result).toBe(10);
   });
 });

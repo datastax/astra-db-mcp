@@ -12,17 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { CreateRecord } from "../../tools/CreateRecord.js";
-import { mockDb } from "../mocks/db.mock";
+import { db } from "../../util/db.js";
 
-// Import the mock to ensure it's applied
-import "../mocks/db.mock";
+// Make TypeScript happy with the mocked module
+const mockDb = db as unknown as {
+  collection: ReturnType<typeof vi.fn>;
+};
+
+// Define the type for mockCollection
+type MockCollection = {
+  insertOne: ReturnType<typeof vi.fn>;
+};
 
 describe("CreateRecord Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.collection.mockClear();
+    vi.clearAllMocks();
   });
 
   it("should create a record in a collection", async () => {
@@ -33,7 +40,7 @@ describe("CreateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    const mockCollection = mockDb.collection(collectionName);
+    const mockCollection = mockDb.collection(collectionName) as unknown as MockCollection;
 
     // Call the function
     const result = await CreateRecord({
@@ -42,7 +49,7 @@ describe("CreateRecord Tool", () => {
     });
 
     // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledTimes(1);
+    expect(mockDb.collection).toHaveBeenCalledTimes(2);
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
     expect(mockCollection.insertOne).toHaveBeenCalledTimes(1);
     expect(mockCollection.insertOne).toHaveBeenCalledWith(record);
@@ -63,7 +70,7 @@ describe("CreateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    const mockCollection = mockDb.collection(collectionName);
+    const mockCollection = mockDb.collection(collectionName) as unknown as MockCollection;
 
     // Call the function
     const result = await CreateRecord({
@@ -72,7 +79,7 @@ describe("CreateRecord Tool", () => {
     });
 
     // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledTimes(1);
+    expect(mockDb.collection).toHaveBeenCalledTimes(2);
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
     expect(mockCollection.insertOne).toHaveBeenCalledTimes(1);
     expect(mockCollection.insertOne).toHaveBeenCalledWith(record);

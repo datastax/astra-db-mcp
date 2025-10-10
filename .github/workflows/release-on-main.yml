@@ -34,7 +34,7 @@ jobs:
       - name: Run tests
         run: npm test
         # Temporary: skip tests for now
-        continue-on-error: true
+        #continue-on-error: true
 
       # Optional: build if needed (for TypeScript, bundlers, etc.)
       - name: Build package

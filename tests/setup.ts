@@ -32,22 +32,37 @@ vi.mock("../util/db.js", () => {
       return Promise.resolve({ oldName: name, newName });
     }),
     deleteCollection: vi.fn().mockResolvedValue({ success: true }),
+    dropCollection: vi.fn().mockImplementation((collectionName) => {
+      return Promise.resolve({ success: true });
+    }),
     collection: vi.fn().mockImplementation((collectionName) => {
+      // Return different mock implementations based on collection name
+      const isNonExistentCollection = collectionName === "non_existent_collection";
+      
       return {
-        find: vi.fn().mockResolvedValue([
-          {
-            _id: "1",
-            title: "Record 1",
-            content: "Content 1",
-            vector: [0.1, 0.2, 0.3],
-          },
-          {
-            _id: "2",
-            title: "Record 2",
-            content: "Content 2",
-            vector: [0.4, 0.5, 0.6],
-          },
-        ]),
+        find: vi.fn().mockReturnValue({
+          limit: vi.fn().mockReturnValue({
+            toArray: vi.fn().mockResolvedValue(
+              isNonExistentCollection
+                ? []
+                : [
+                    {
+                      _id: "1",
+                      title: "Record 1",
+                      content: "Content 1",
+                      vector: [0.1, 0.2, 0.3],
+                    },
+                    {
+                      _id: "2",
+                      title: "Record 2",
+                      content: "Content 2",
+                      vector: [0.4, 0.5, 0.6],
+                    },
+                  ]
+            )
+          })
+        }),
+        estimatedDocumentCount: vi.fn().mockResolvedValue(10),
         findOne: vi.fn().mockImplementation(({ _id }) => {
           if (_id === "1") {
             return Promise.resolve({

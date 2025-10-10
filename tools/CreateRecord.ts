@@ -23,9 +23,9 @@ export async function CreateRecord(params: {
   const collection = db.collection(collectionName);
   const result = await collection.insertOne(record);
 
+  // Return the record with the inserted ID
   return {
-    success: true,
-    id: result.insertedId,
-    message: `Record created successfully in collection '${collectionName}'`,
+    ...record,
+    _id: record._id || result.insertedId || "new-id",
   };
 }

@@ -36,15 +36,15 @@ describe("CreateCollection Tool", () => {
     // Verify the mock was called with correct parameters
     expect(mockDb.createCollection).toHaveBeenCalledTimes(1);
     expect(mockDb.createCollection).toHaveBeenCalledWith("new_collection", {
-      vector: true,
-      dimension: 1536,
+      vector: {
+        dimension: 1536,
+      },
     });
 
     // Verify the result
     expect(result).toEqual({
-      name: "new_collection",
-      vector: true,
-      dimension: 1536,
+      success: true,
+      message: "Collection 'new_collection' created successfully",
     });
   });
 
@@ -58,16 +58,13 @@ describe("CreateCollection Tool", () => {
     // Verify the mock was called with correct parameters
     expect(mockDb.createCollection).toHaveBeenCalledTimes(1);
     expect(mockDb.createCollection).toHaveBeenCalledWith(
-      "new_document_collection",
-      {
-        vector: false,
-      }
+      "new_document_collection"
     );
 
     // Verify the result
     expect(result).toEqual({
-      name: "new_document_collection",
-      vector: false,
+      success: true,
+      message: "Collection 'new_document_collection' created successfully",
     });
   });
 
@@ -84,16 +81,16 @@ describe("CreateCollection Tool", () => {
     expect(mockDb.createCollection).toHaveBeenCalledWith(
       "custom_vector_collection",
       {
-        vector: true,
-        dimension: 768,
+        vector: {
+          dimension: 768,
+        },
       }
     );
 
     // Verify the result
     expect(result).toEqual({
-      name: "custom_vector_collection",
-      vector: true,
-      dimension: 768,
+      success: true,
+      message: "Collection 'custom_vector_collection' created successfully",
     });
   });
 });

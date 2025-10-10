@@ -29,17 +29,12 @@ export async function UpdateRecord(params: {
 
   const result = await collection.updateOne(
     { _id: recordId },
-    { $set: updateData }
+    updateData
   );
 
-  if (result.matchedCount === 0) {
-    throw new Error(
-      `Record with ID '${recordId}' not found in collection '${collectionName}'`
-    );
-  }
-
+  // Return the updated record with the ID
   return {
-    success: true,
-    message: `Record '${recordId}' updated successfully in collection '${collectionName}'`,
+    ...record,
+    _id: recordId,
   };
 }

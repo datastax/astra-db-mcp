@@ -38,11 +38,14 @@ vi.mock("../tools/CreateCollection.js", () => ({
   }),
 }));
 
+// Create a mock for setRequestHandler
+const mockSetRequestHandler = vi.fn();
+
 // Mock the Server class
 vi.mock("@modelcontextprotocol/sdk/server/index.js", () => {
   return {
     Server: vi.fn().mockImplementation(() => ({
-      setRequestHandler: vi.fn(),
+      setRequestHandler: mockSetRequestHandler,
     })),
   };
 });

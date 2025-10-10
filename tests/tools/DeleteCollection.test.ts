@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DeleteCollection } from "../../tools/DeleteCollection.js";
-import { mockDb } from "../mocks/db.mock";
+import { db } from "../../util/db.js";
 
-// Import the mock to ensure it's applied
-import "../mocks/db.mock";
+// Make TypeScript happy with the mocked module
+const mockDb = db as unknown as {
+  dropCollection: ReturnType<typeof vi.fn>;
+};
 
 describe("DeleteCollection Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.deleteCollection.mockClear();
+    mockDb.dropCollection.mockClear();
   });
 
   it("should delete a collection", async () => {
@@ -34,10 +36,13 @@ describe("DeleteCollection Tool", () => {
     });
 
     // Verify the mock was called with correct parameters
-    expect(mockDb.deleteCollection).toHaveBeenCalledTimes(1);
-    expect(mockDb.deleteCollection).toHaveBeenCalledWith(collectionName);
+    expect(mockDb.dropCollection).toHaveBeenCalledTimes(1);
+    expect(mockDb.dropCollection).toHaveBeenCalledWith(collectionName);
 
     // Verify the result
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({
+      success: true,
+      message: `Collection '${collectionName}' deleted successfully`
+    });
   });
 });

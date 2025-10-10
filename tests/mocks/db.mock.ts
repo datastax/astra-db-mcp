@@ -33,6 +33,7 @@ interface RecordCollection {
 const mockCollections: Collection[] = [
   { name: "test_collection1", type: "vector" },
   { name: "test_collection2", type: "document" },
+  { name: "old_collection", type: "vector" },
 ];
 
 // Mock records data

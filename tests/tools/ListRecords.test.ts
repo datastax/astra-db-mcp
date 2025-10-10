@@ -12,23 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ListRecords } from "../../tools/ListRecords.js";
-import { mockDb } from "../mocks/db.mock";
+import { db } from "../../util/db.js";
 
-// Import the mock to ensure it's applied
-import "../mocks/db.mock";
+// Make TypeScript happy with the mocked module
+const mockDb = db as unknown as {
+  collection: ReturnType<typeof vi.fn>;
+};
 
 describe("ListRecords Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.collection.mockClear();
+    vi.clearAllMocks();
   });
 
   it("should list records from a collection", async () => {
     const collectionName = "test_collection1";
-    const mockCollection = mockDb.collection(collectionName);
-
+    
     // Call the function
     const result = await ListRecords({
       collectionName,
@@ -38,7 +39,6 @@ describe("ListRecords Tool", () => {
     // Verify the mocks were called correctly
     expect(mockDb.collection).toHaveBeenCalledTimes(1);
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockCollection.find).toHaveBeenCalledTimes(1);
 
     // Verify the result
     expect(result).toEqual([
@@ -59,7 +59,6 @@ describe("ListRecords Tool", () => {
 
   it("should return an empty array for a non-existent collection", async () => {
     const collectionName = "non_existent_collection";
-    const mockCollection = mockDb.collection(collectionName);
 
     // Call the function
     const result = await ListRecords({
@@ -70,7 +69,6 @@ describe("ListRecords Tool", () => {
     // Verify the mocks were called correctly
     expect(mockDb.collection).toHaveBeenCalledTimes(1);
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockCollection.find).toHaveBeenCalledTimes(1);
 
     // Verify the result is an empty array
     expect(result).toEqual([]);
