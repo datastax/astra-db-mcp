@@ -23,7 +23,12 @@ export async function DeleteRecord(params: {
   const collection = db.collection(collectionName);
   const result = await collection.deleteOne({ _id: recordId });
 
-  // Return the expected format for the test
+  if (result.deletedCount === 0) {
+    throw new Error(
+      `Record with ID '${recordId}' not found in collection '${collectionName}'`
+    );
+  }
+
   return {
     _id: recordId,
     deleted: true,

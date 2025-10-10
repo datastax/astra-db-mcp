@@ -28,5 +28,6 @@ export async function UpdateCollection(params: {
   return {
     oldName: collectionName,
     newName,
+    message: `Collection '${collectionName}' renamed to '${newName}'`,
   };
 }

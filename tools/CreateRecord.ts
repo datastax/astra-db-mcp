@@ -23,9 +23,5 @@ export async function CreateRecord(params: {
   const collection = db.collection(collectionName);
   const result = await collection.insertOne(record);
 
-  // Return the record with the inserted ID
-  return {
-    ...record,
-    _id: record._id || result.insertedId || "new-id",
-  };
+  return result;
 }

@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { UpdateCollection } from "../../tools/UpdateCollection.js";
-import { mockDb } from "../mocks/db.mock";
+import { db } from "../../util/db.js";
 
-// Import the mock to ensure it's applied
-import "../mocks/db.mock";
+// Make TypeScript happy with the mocked module
+const mockDb = db as unknown as {
+  updateCollection: ReturnType<typeof vi.fn>;
+};
 
 describe("UpdateCollection Tool", () => {
   beforeEach(() => {
@@ -43,6 +45,7 @@ describe("UpdateCollection Tool", () => {
     expect(result).toEqual({
       oldName,
       newName,
+      message: `Collection '${oldName}' renamed to '${newName}'`,
     });
   });
 });

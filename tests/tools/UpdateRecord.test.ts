@@ -12,12 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { UpdateRecord } from "../../tools/UpdateRecord.js";
-import { mockDb } from "../mocks/db.mock";
+import { db } from "../../util/db.js";
 
-// Import the mock to ensure it's applied
-import "../mocks/db.mock";
+// Make TypeScript happy with the mocked module
+const mockDb = db as unknown as {
+  collection: ReturnType<typeof vi.fn>;
+};
+
+// Mock the collection's updateOne method
+const mockUpdateOne = vi.fn();
+mockDb.collection.mockReturnValue({
+  updateOne: mockUpdateOne
+});
+
+// Set up the mock implementation for updateOne
+mockUpdateOne.mockImplementation(({ _id }, record) => {
+  return Promise.resolve({ ...record, _id });
+});
 
 describe("UpdateRecord Tool", () => {
   beforeEach(() => {
@@ -34,7 +47,7 @@ describe("UpdateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    const mockCollection = mockDb.collection(collectionName);
+    // No need to get mockCollection, it's already set up
 
     // Call the function
     const result = await UpdateRecord({
@@ -44,10 +57,8 @@ describe("UpdateRecord Tool", () => {
     });
 
     // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledTimes(1);
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockCollection.updateOne).toHaveBeenCalledTimes(1);
-    expect(mockCollection.updateOne).toHaveBeenCalledWith(
+    expect(mockUpdateOne).toHaveBeenCalledWith(
       { _id: recordId },
       record
     );

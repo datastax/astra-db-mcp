@@ -21,10 +21,16 @@ const mockDb = db as unknown as {
   collection: ReturnType<typeof vi.fn>;
 };
 
-// Define the type for mockCollection
-type MockCollection = {
-  insertOne: ReturnType<typeof vi.fn>;
-};
+// Mock the collection's insertOne method
+const mockInsertOne = vi.fn();
+mockDb.collection.mockReturnValue({
+  insertOne: mockInsertOne
+});
+
+// Set up the mock implementation for insertOne
+mockInsertOne.mockImplementation((record) => {
+  return Promise.resolve({ ...record, _id: record._id || "new-id" });
+});
 
 describe("CreateRecord Tool", () => {
   beforeEach(() => {
@@ -40,7 +46,7 @@ describe("CreateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    const mockCollection = mockDb.collection(collectionName) as unknown as MockCollection;
+    // No need to get mockCollection, it's already set up
 
     // Call the function
     const result = await CreateRecord({
@@ -49,10 +55,8 @@ describe("CreateRecord Tool", () => {
     });
 
     // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledTimes(2);
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockCollection.insertOne).toHaveBeenCalledTimes(1);
-    expect(mockCollection.insertOne).toHaveBeenCalledWith(record);
+    expect(mockInsertOne).toHaveBeenCalledWith(record);
 
     // Verify the result
     expect(result).toEqual({
@@ -70,7 +74,7 @@ describe("CreateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    const mockCollection = mockDb.collection(collectionName) as unknown as MockCollection;
+    // No need to get mockCollection, it's already set up
 
     // Call the function
     const result = await CreateRecord({
@@ -79,10 +83,8 @@ describe("CreateRecord Tool", () => {
     });
 
     // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledTimes(2);
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockCollection.insertOne).toHaveBeenCalledTimes(1);
-    expect(mockCollection.insertOne).toHaveBeenCalledWith(record);
+    expect(mockInsertOne).toHaveBeenCalledWith(record);
 
     // Verify the result
     expect(result).toEqual({

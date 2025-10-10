@@ -32,9 +32,14 @@ export async function UpdateRecord(params: {
     updateData
   );
 
-  // Return the updated record with the ID
+  if (result.matchedCount === 0) {
+    throw new Error(
+      `Record with ID '${recordId}' not found in collection '${collectionName}'`
+    );
+  }
+
   return {
-    ...record,
+    ...updateData,
     _id: recordId,
   };
 }

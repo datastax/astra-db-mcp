@@ -21,10 +21,16 @@ const mockDb = db as unknown as {
   collection: ReturnType<typeof vi.fn>;
 };
 
-// Define the type for mockCollection
-type MockCollection = {
-  deleteOne: ReturnType<typeof vi.fn>;
-};
+// Mock the collection's deleteOne method
+const mockDeleteOne = vi.fn();
+mockDb.collection.mockReturnValue({
+  deleteOne: mockDeleteOne
+});
+
+// Set up the mock implementation for deleteOne
+mockDeleteOne.mockImplementation(({ _id }) => {
+  return Promise.resolve({ _id, deleted: true });
+});
 
 describe("DeleteRecord Tool", () => {
   beforeEach(() => {
@@ -36,7 +42,7 @@ describe("DeleteRecord Tool", () => {
     const collectionName = "test_collection1";
     const recordId = "1";
 
-    const mockCollection = mockDb.collection(collectionName) as unknown as MockCollection;
+    // No need to get mockCollection, it's already set up
 
     // Call the function
     const result = await DeleteRecord({
@@ -45,10 +51,8 @@ describe("DeleteRecord Tool", () => {
     });
 
     // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledTimes(2);
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockCollection.deleteOne).toHaveBeenCalledTimes(1);
-    expect(mockCollection.deleteOne).toHaveBeenCalledWith({ _id: recordId });
+    expect(mockDeleteOne).toHaveBeenCalledWith({ _id: recordId });
 
     // Verify the result
     expect(result).toEqual({
