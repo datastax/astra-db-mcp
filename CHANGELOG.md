@@ -10,6 +10,7 @@
 
 **Merged pull requests:**
 
+- chore\(release\): Bump tag version and update changelog [\#34](https://github.com/datastax/astra-db-mcp/pull/34) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Resolve react version conflict [\#33](https://github.com/datastax/astra-db-mcp/pull/33) ([harusametime](https://github.com/harusametime))
 - Bump the github-actions group across 1 directory with 3 updates [\#32](https://github.com/datastax/astra-db-mcp/pull/32) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump the github-actions group across 1 directory with 2 updates [\#26](https://github.com/datastax/astra-db-mcp/pull/26) ([dependabot[bot]](https://github.com/apps/dependabot))
