@@ -2,13 +2,27 @@
 name: Tag and Publish on Merge
   
 on:
-  # Trigger the workflow on push to the main branch
-  push:
+  # Trigger only when a pull request targeting main is closed.
+  # The job-level `if` condition below further narrows this to:
+  #   1. PRs that were actually merged (not just closed/abandoned), AND
+  #   2. PRs whose head branch starts with 'release/bump-tag-version-and-update-changelog'
+  #      — the branch prefix used exclusively by the tag-release.yml workflow.
+  # This ensures the release pipeline fires only on merges of release PRs,
+  # not on every direct push or unrelated PR merge into main.
+  pull_request:
+    types:
+      - closed
     branches:
       - main
 
 jobs:
   release:
+    # Guard: only run when the PR was merged AND originated from the release branch
+    # created by tag-release.yml. The startsWith check handles the short-commit-hash
+    # suffix appended to the branch name by peter-evans/create-pull-request.
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/bump-tag-version-and-update-changelog')
     name: Create Git Tag, GitHub Release, and Publish to npm
     runs-on: ubuntu-latest
     permissions:
