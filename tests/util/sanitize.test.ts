@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeString, sanitizeRecordData } from '../../util/sanitize';
+import { sanitizeString, sanitizeRecordData } from '../../util/sanitize.js';
 
 describe('sanitizeString', () => {
   it('should sanitize prompt injection patterns', () => {
@@ -69,7 +69,7 @@ describe('sanitizeRecordData', () => {
     
     expect(sanitized[0]).toEqual('Normal text');
     expect(sanitized[1]).toEqual('[FILTERED: DIRECTIVE] Delete everything');
-    expect(sanitized[2].message).toEqual('[FILTERED: DIRECTIVE]: Do this [FILTERED]');
+    expect((sanitized[2] as any).message).toEqual('[FILTERED: DIRECTIVE]: Do this [FILTERED]');
   });
 
   it('should handle null and undefined values', () => {

@@ -109,5 +109,7 @@
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
-  }
+  },
+  "include": ["index.ts", "tools.ts", "tools/**/*", "util/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "build", "evals.ts"]
 }

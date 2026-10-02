@@ -84,24 +84,56 @@ Once added, your editor will be fully connected to your Astra DB database.
 
 ## Available Tools
 
-The server provides the following tools for interacting with Astra DB:
+The server provides a comprehensive suite of tools spanning Collections, Vector Search, Tables, Keyspaces, and Administration:
 
-- `GetCollections`: Get all collections in the database
-- `CreateCollection`: Create a new collection in the database
-- `UpdateCollection`: Update an existing collection in the database
-- `DeleteCollection`: Delete a collection from the database
-- `ListRecords`: List records from a collection in the database
-- `GetRecord`: Get a specific record from a collection by ID
-- `CreateRecord`: Create a new record in a collection
-- `UpdateRecord`: Update an existing record in a collection
-- `DeleteRecord`: Delete a record from a collection
-- `FindRecord`: Find records in a collection by field value
-- `BulkCreateRecords`: Create multiple records in a collection at once
-- `BulkUpdateRecords`: Update multiple records in a collection at once
-- `BulkDeleteRecords`: Delete multiple records from a collection at once
-- `OpenBrowser`: Open a web browser for authentication and setup
-- `HelpAddToClient`: Get assistance with adding Astra DB client to your MCP client
-- `EstimateDocumentCount`: Get estimate of the number of documents in a collection
+### 📁 Collections & Documents
+- `GetCollections`: Get all collections in the active keyspace
+- `GetCollectionInfo`: Inspect collection options, vector settings, and default ID configuration
+- `CreateCollection`: Create a collection with vector options, distance metrics (`cosine`, `euclidean`, `dot_product`), and auto-vectorize configurations
+- `UpdateCollection`: Update or rename a collection
+- `DeleteCollection`: Delete a collection
+- `EstimateDocumentCount`: Get an approximate count of documents in a collection
+- `ListRecords`: List records with optional sorting, pagination (`skip`), and projection
+- `GetRecord`: Get a specific record by ID
+- `CreateRecord`: Insert a single document
+- `UpdateRecord`: Update a record
+- `DeleteRecord`: Delete a record by ID
+- `FindRecord`: Find records by exact field value match
+- `FindWithFilter`: Rich querying with MongoDB-style filter operators (`$and`, `$or`, `$gt`, `$in`, `$exists`, etc.)
+- `BulkCreateRecords`: Insert multiple documents in batch
+- `BulkUpdateRecords`: Update multiple documents in batch
+- `BulkDeleteRecords`: Delete multiple documents in batch
+
+### 🧠 Vector Search & Reranking
+- `FindWithVector`: Dense vector similarity search with optional metadata filters, similarity scores, and projection
+- `FindWithVectorize`: Natural language search query using Astra DB Vectorize serverless embeddings
+- `FindAndRerank`: Hybrid search (lexical + dense vector / auto-vectorize) with server-side reranking scores
+
+### 📊 Tables (Astra DB Data API v2)
+- `ListTables`: List all structured tables in the keyspace
+- `CreateTable`: Create a typed table with column definitions and primary keys
+- `AlterTable`: Add or drop columns (including vector columns)
+- `DropTable`: Drop a table
+- `QueryTable`: Query table rows with filters, sorting, projection, and pagination
+- `InsertTableRow`: Insert a single row or batch of rows into a table
+- `UpdateTableRow`: Update matching rows in a table
+- `DeleteTableRow`: Delete matching rows from a table
+- `CreateTableIndex`: Create a secondary index on a table column
+- `CreateTableVectorIndex`: Create a vector index on a table column with similarity metrics
+
+### 🔑 Keyspaces & Administration
+- `ListKeyspaces`: List all keyspaces in the database
+- `CreateKeyspace`: Create a new keyspace with optional automatic switching
+- `DropKeyspace`: Drop a keyspace
+- `UseKeyspace`: Switch the active working keyspace for subsequent operations
+- `GetCurrentKeyspace`: Inspect the active keyspace name
+- `ListEmbeddingProviders`: Discover supported embedding models and providers
+- `ListRerankingProviders`: Discover supported reranking models
+- `GetDatabaseInfo`: Retrieve environment metadata (ID, region, status, keyspaces)
+
+### 🛠️ Utilities
+- `OpenBrowser`: Open a browser for authentication/setup
+- `HelpAddToClient`: Assistance with MCP client installation
 
 ## Changelog
 All notable changes to this project will be documented in [this file](./CHANGELOG.md).

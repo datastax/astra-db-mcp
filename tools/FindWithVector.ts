@@ -13,32 +13,46 @@
 // limitations under the License.
 
 import { db } from "../util/db.js";
-import { sanitizeRecordData } from "../util/sanitize.js";
+import { vector } from "@datastax/astra-db-ts";
 
-export interface ListRecordsParams {
+export interface FindWithVectorParams {
   collectionName: string;
+  vector: number[];
+  filter?: Record<string, any>;
   limit?: number;
   skip?: number;
-  sort?: Record<string, 1 | -1>;
+  includeSimilarity?: boolean;
   projection?: Record<string, any>;
 }
 
-export async function ListRecords(params: ListRecordsParams) {
-  const { collectionName, limit = 10, skip = 0, sort, projection } = params;
+export async function FindWithVector(params: FindWithVectorParams) {
+  const {
+    collectionName,
+    vector: vecInput,
+    filter = {},
+    limit = 10,
+    skip = 0,
+    includeSimilarity = true,
+    projection,
+  } = params;
 
   const collection = db.collection(collectionName);
-  let cursor = collection.find({}, { projection }).limit(limit);
+  const sortOption: Record<string, any> = {
+    $vector: typeof vector === "function" ? vector(vecInput) : vecInput,
+  };
+
+  let cursor = collection
+    .find(filter, { projection })
+    .sort(sortOption as any)
+    .limit(limit);
 
   if (skip > 0) {
     cursor = cursor.skip(skip);
   }
 
-  if (sort && Object.keys(sort).length > 0) {
-    cursor = cursor.sort(sort as any);
+  if (includeSimilarity) {
+    cursor = cursor.includeSimilarity(true);
   }
 
-  const records = await cursor.toArray();
-
-  // Return sanitized records to prevent prompt injection attacks
-  return sanitizeRecordData(records);
+  return await cursor.toArray();
 }

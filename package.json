@@ -21,15 +21,16 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@datastax/astra-db-ts": "^1.5.0",
-    "@modelcontextprotocol/sdk": "^1.6.1",
-    "dotenv": "^16.4.7",
+    "@datastax/astra-db-ts": "^2.3.0",
+    "@modelcontextprotocol/core": "^2.2.0",
+    "@modelcontextprotocol/server": "^2.2.0",
+    "dotenv": "^18.0.5",
     "jsonschema": "^1.5.0",
-    "mcp-evals": "1.0.10"
+    "mcp-evals": "^2.0.1"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "^0.4.1",
-    "@types/node": "^20.17.23",
+    "@modelcontextprotocol/inspector": "^2.9.0",
+    "@types/node": "^22.13.10",
     "esbuild": "^0.25.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.2",

@@ -13,11 +13,7 @@
 // limitations under the License.
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { Server } from "@modelcontextprotocol/server";
 import { tools } from "../tools.js";
 
 // Mock the tools
@@ -42,11 +38,13 @@ vi.mock("../tools/CreateCollection.js", () => ({
 const mockSetRequestHandler = vi.fn();
 
 // Mock the Server class
-vi.mock("@modelcontextprotocol/sdk/server/index.js", () => {
+vi.mock("@modelcontextprotocol/server", () => {
   return {
     Server: vi.fn().mockImplementation(() => ({
       setRequestHandler: mockSetRequestHandler,
     })),
+    ProtocolError: vi.fn(),
+    METHOD_NOT_FOUND: -32601,
   };
 });
 
@@ -65,23 +63,22 @@ describe("MCP Server", () => {
     const server = new Server(
       {
         name: "astra-db-mcp-server",
-        version: "1.0.0",
+        version: "2.0.0",
       },
       {
         capabilities: {
-          tools: {
-            list: true,
-            call: true,
-          },
+          tools: {},
         },
       }
     );
     
-    server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    server.setRequestHandler("tools/list", async () => ({
       tools,
     }));
     
-    server.setRequestHandler(CallToolRequestSchema, async () => ({}));
+    server.setRequestHandler("tools/call", async () => ({
+      content: [{ type: "text", text: "success" }],
+    }));
   });
 
   it("should initialize the server with correct configuration", () => {
@@ -89,14 +86,11 @@ describe("MCP Server", () => {
     expect(Server).toHaveBeenCalledWith(
       {
         name: "astra-db-mcp-server",
-        version: "1.0.0",
+        version: "2.0.0",
       },
       {
         capabilities: {
-          tools: {
-            list: true,
-            call: true,
-          },
+          tools: {},
         },
       }
     );
@@ -108,13 +102,13 @@ describe("MCP Server", () => {
 
     // Check that the ListTools handler was set up
     expect(mockSetRequestHandler).toHaveBeenCalledWith(
-      ListToolsRequestSchema,
+      "tools/list",
       expect.any(Function)
     );
 
     // Check that the CallTool handler was set up
     expect(mockSetRequestHandler).toHaveBeenCalledWith(
-      CallToolRequestSchema,
+      "tools/call",
       expect.any(Function)
     );
   });

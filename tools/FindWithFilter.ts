@@ -15,19 +15,27 @@
 import { db } from "../util/db.js";
 import { sanitizeRecordData } from "../util/sanitize.js";
 
-export interface ListRecordsParams {
+export interface FindWithFilterParams {
   collectionName: string;
-  limit?: number;
-  skip?: number;
+  filter: Record<string, any>;
   sort?: Record<string, 1 | -1>;
   projection?: Record<string, any>;
+  limit?: number;
+  skip?: number;
 }
 
-export async function ListRecords(params: ListRecordsParams) {
-  const { collectionName, limit = 10, skip = 0, sort, projection } = params;
+export async function FindWithFilter(params: FindWithFilterParams) {
+  const {
+    collectionName,
+    filter,
+    sort,
+    projection,
+    limit = 10,
+    skip = 0,
+  } = params;
 
   const collection = db.collection(collectionName);
-  let cursor = collection.find({}, { projection }).limit(limit);
+  let cursor = collection.find(filter, { projection }).limit(limit);
 
   if (skip > 0) {
     cursor = cursor.skip(skip);
@@ -38,7 +46,5 @@ export async function ListRecords(params: ListRecordsParams) {
   }
 
   const records = await cursor.toArray();
-
-  // Return sanitized records to prevent prompt injection attacks
   return sanitizeRecordData(records);
 }

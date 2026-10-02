@@ -38,7 +38,8 @@ const buildOptions = {
   external: [
     // External packages that should not be bundled
     "@datastax/astra-db-ts",
-    "@modelcontextprotocol/sdk",
+    "@modelcontextprotocol/core",
+    "@modelcontextprotocol/server",
     "jsonschema",
     "dotenv",
   ],

@@ -38,6 +38,7 @@ describe("CreateCollection Tool", () => {
     expect(mockDb.createCollection).toHaveBeenCalledWith("new_collection", {
       vector: {
         dimension: 1536,
+        metric: "cosine",
       },
     });
 
@@ -83,6 +84,7 @@ describe("CreateCollection Tool", () => {
       {
         vector: {
           dimension: 768,
+          metric: "cosine",
         },
       }
     );
