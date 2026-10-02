@@ -2,7 +2,16 @@
 
 ## [Unreleased](https://github.com/datastax/astra-db-mcp/tree/HEAD)
 
-[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.2.0...HEAD)
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.2.2...HEAD)
+
+**Merged pull requests:**
+
+- Bump the github-actions group across 1 directory with 2 updates [\#38](https://github.com/datastax/astra-db-mcp/pull/38) ([dependabot[bot]](https://github.com/apps/dependabot))
+- feat!: add tables, keyspaces, vector search, and MCP SDK v2 support [\#29](https://github.com/datastax/astra-db-mcp/pull/29) ([msmygit](https://github.com/msmygit))
+
+## [v1.2.2](https://github.com/datastax/astra-db-mcp/tree/v1.2.2) (2026-01-26)
+
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.2.0...v1.2.2)
 
 **Implemented enhancements:**
 
@@ -10,6 +19,8 @@
 
 **Merged pull requests:**
 
+- Update npm ci command to include legacy-peer-deps [\#36](https://github.com/datastax/astra-db-mcp/pull/36) ([harusametime](https://github.com/harusametime))
+- chore\(release\): Bump tag version and update changelog [\#35](https://github.com/datastax/astra-db-mcp/pull/35) ([github-actions[bot]](https://github.com/apps/github-actions))
 - chore\(release\): Bump tag version and update changelog [\#34](https://github.com/datastax/astra-db-mcp/pull/34) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Resolve react version conflict [\#33](https://github.com/datastax/astra-db-mcp/pull/33) ([harusametime](https://github.com/harusametime))
 - Bump the github-actions group across 1 directory with 3 updates [\#32](https://github.com/datastax/astra-db-mcp/pull/32) ([dependabot[bot]](https://github.com/apps/dependabot))
