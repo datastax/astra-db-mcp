@@ -38,11 +38,14 @@ vi.mock("../tools/CreateCollection.js", () => ({
 const mockSetRequestHandler = vi.fn();
 
 // Mock the Server class
+// Note: mockImplementation must use `function` (not an arrow function) so the
+// mock can be called with `new`. Vitest v5 enforces this — arrow functions are
+// not constructors and will throw "is not a constructor" at runtime.
 vi.mock("@modelcontextprotocol/server", () => {
   return {
-    Server: vi.fn().mockImplementation(() => ({
-      setRequestHandler: mockSetRequestHandler,
-    })),
+    Server: vi.fn().mockImplementation(function () {
+      return { setRequestHandler: mockSetRequestHandler };
+    }),
     ProtocolError: vi.fn(),
     METHOD_NOT_FOUND: -32601,
   };

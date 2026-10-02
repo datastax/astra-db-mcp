@@ -34,7 +34,11 @@
     "esbuild": "^0.25.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.2",
-    "vitest": "^1.6.1"
+    "vitest": "5.0.3"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.14.0",
+    "npm": ">=11.15.0"
+  }
 }

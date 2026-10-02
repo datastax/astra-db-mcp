@@ -36,7 +36,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          # Node >=22.14.0 is required (engines field in package.json).
+          node-version: '22'
 
       - name: Git config
         run: |
