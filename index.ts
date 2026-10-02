@@ -830,4 +830,3 @@ server.setRequestHandler("tools/call", async (request: any) => {
 const transport = new StdioServerTransport();
 await server.connect(transport);
 
-// Made with Bob

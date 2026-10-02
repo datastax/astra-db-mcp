@@ -76,4 +76,3 @@ export async function HybridSearch({
   return sanitizeRecordData(results);
 }
 
-// Made with Bob
