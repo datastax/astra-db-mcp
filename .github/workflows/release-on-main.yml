@@ -37,7 +37,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          # Node >=22.14.0 is required by npm staged publishing (npm stage publish).
+          # npm >=11.15.0 is also required; actions/setup-node bundles a compatible
+          # npm for node 22, but the explicit npm-version pin guarantees the minimum.
+          node-version: '22'
+          npm-version: '11.15.0'
           registry-url: 'https://registry.npmjs.org/'
 
       - name: Install dependencies (including devDependencies)
@@ -78,8 +82,12 @@ jobs:
 
       - name: Publish to npm (staged)
         # Stages the package on the npm registry without requiring 2FA/OTP.
-        # The package is held in a staging area until a human approves and publishes it
-        # via the npm website or CLI. See: https://docs.npmjs.com/staged-publishing
+        # The package is held in a staging area and is NOT publicly available until
+        # a maintainer explicitly approves it with 2FA via:
+        #   CLI:  npm stage approve <stage-id>
+        #   Web:  npmjs.com → Staged Packages tab → Approve
+        # Requires: npm CLI >=11.15.0, Node >=22.14.0 (both set in the setup step above).
+        # See: https://docs.npmjs.com/staged-publishing
         run: npm stage publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

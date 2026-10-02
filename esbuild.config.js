@@ -29,7 +29,7 @@ const buildOptions = {
   entryPoints: ["index.ts"],
   bundle: true,
   platform: "node",
-  target: "node18",
+  target: "node22",
   format: "esm",
   outfile: "build/index.js",
   banner: {
