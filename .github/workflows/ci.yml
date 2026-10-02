@@ -21,7 +21,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # --legacy-peer-deps: @modelcontextprotocol/inspector has a transitive peer
+        # dep chain (inspector → vite@^8 → esbuild@^0.27||^0.28) that conflicts
+        # with other peers at resolution time. This flag matches the flag already
+        # used in release-on-main.yml.
+        run: npm ci --legacy-peer-deps
 
       - name: Run Tests
         run: npm test
