@@ -2,10 +2,19 @@
 
 ## [Unreleased](https://github.com/datastax/astra-db-mcp/tree/HEAD)
 
-[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.2.2...HEAD)
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.3.0...HEAD)
+
+**Implemented enhancements:**
+
+- ci: restrict release trigger to merged release PRs only [\#40](https://github.com/datastax/astra-db-mcp/pull/40) ([msmygit](https://github.com/msmygit))
+
+## [v1.3.0](https://github.com/datastax/astra-db-mcp/tree/v1.3.0) (2026-10-02)
+
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.2.2...v1.3.0)
 
 **Merged pull requests:**
 
+- chore\(release\): Bump tag version and update changelog [\#39](https://github.com/datastax/astra-db-mcp/pull/39) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Bump the github-actions group across 1 directory with 2 updates [\#38](https://github.com/datastax/astra-db-mcp/pull/38) ([dependabot[bot]](https://github.com/apps/dependabot))
 - feat!: add tables, keyspaces, vector search, and MCP SDK v2 support [\#29](https://github.com/datastax/astra-db-mcp/pull/29) ([msmygit](https://github.com/msmygit))
 
