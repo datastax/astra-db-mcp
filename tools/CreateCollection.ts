@@ -14,11 +14,13 @@
 
 import { db } from "../util/db.js";
 
+export type VectorMetric = "cosine" | "euclidean" | "dot_product";
+
 export interface CreateCollectionParams {
   collectionName: string;
   vector?: boolean;
   dimension?: number;
-  metric?: "cosine" | "euclidean" | "dot_product";
+  metric?: VectorMetric;
   service?: {
     provider: string;
     modelName: string;
@@ -84,3 +86,5 @@ export async function CreateCollection(params: CreateCollectionParams) {
     message: `Collection '${collectionName}' created successfully`,
   };
 }
+
+// Made with Bob

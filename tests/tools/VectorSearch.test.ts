@@ -16,6 +16,7 @@ import { describe, it, expect, vi } from "vitest";
 import { FindWithVector } from "../../tools/FindWithVector.js";
 import { FindWithVectorize } from "../../tools/FindWithVectorize.js";
 import { FindAndRerank } from "../../tools/FindAndRerank.js";
+import { VectorSearch } from "../../tools/VectorSearch.js";
 import "../mocks/db.mock.js";
 
 describe("Vector & Hybrid Search Tools", () => {
@@ -58,5 +59,14 @@ describe("Vector & Hybrid Search Tools", () => {
 
     expect(results).toBeDefined();
     expect(Array.isArray(results)).toBe(true);
+  });
+
+  it("VectorSearch executes legacy vector similarity search", async () => {
+    const queryVector = [0.1, 0.2, 0.3];
+    const result = await VectorSearch({
+      collectionName: "test_collection1",
+      queryVector,
+    });
+    expect(Array.isArray(result)).toBe(true);
   });
 });

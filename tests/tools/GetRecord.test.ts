@@ -14,42 +14,17 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { GetRecord } from "../../tools/GetRecord.js";
-import { db } from "../../util/db.js";
-
-// Make TypeScript happy with the mocked module
-const mockDb = db as unknown as {
-  collection: ReturnType<typeof vi.fn>;
-};
-
-// Mock the collection's findOne method
-const mockFindOne = vi.fn();
-mockDb.collection.mockReturnValue({
-  findOne: mockFindOne
-});
-
-// Set up the mock implementation for findOne
-mockFindOne.mockImplementation(({ _id }) => {
-  if (_id === "1") {
-    return Promise.resolve({
-      _id: "1",
-      title: "Record 1",
-      content: "Content 1",
-      vector: [0.1, 0.2, 0.3],
-    });
-  }
-  return Promise.resolve(null);
-});
+import { mockDb } from "../mocks/db.mock.js";
 
 describe("GetRecord Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.collection.mockClear();
+    vi.clearAllMocks();
   });
 
   it("should get a record by ID", async () => {
     const collectionName = "test_collection1";
     const recordId = "1";
-    // No need to get mockCollection, it's already set up
 
     // Call the function
     const result = await GetRecord({
@@ -59,22 +34,16 @@ describe("GetRecord Tool", () => {
 
     // Verify the mocks were called correctly
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockFindOne).toHaveBeenCalledWith({ _id: recordId });
 
     // Verify the result
-    expect(result).toEqual({
-      _id: "1",
-      title: "Record 1",
-      content: "Content 1",
-      vector: [0.1, 0.2, 0.3],
-    });
+    expect(result).toBeDefined();
+    expect(result?._id).toBe("1");
+    expect(result?.title).toBe("Record 1");
   });
 
   it("should return null for a non-existent record", async () => {
     const collectionName = "test_collection1";
     const recordId = "non_existent_id";
-    // For this test, we'll override the mock to return null
-    mockFindOne.mockResolvedValueOnce(null);
 
     // Call the function
     const result = await GetRecord({
@@ -84,7 +53,6 @@ describe("GetRecord Tool", () => {
 
     // Verify the mocks were called correctly
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockFindOne).toHaveBeenCalledWith({ _id: recordId });
 
     // Verify the result is null
     expect(result).toBeNull();

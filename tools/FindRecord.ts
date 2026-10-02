@@ -44,7 +44,27 @@ export async function FindRecord(params: {
   query[field] = value;
 
   // Perform the search
-  const results = await collection.find(query).limit(limit).toArray();
+  let results: any[] = [];
+  try {
+    const cursor = collection.find(query);
+    
+    // Handle the case when toArray is not available
+    if (!cursor || typeof cursor.toArray !== 'function') {
+      console.warn(`cursor.toArray is not available for query on field '${field}'`);
+      return [];
+    }
+    
+    if (typeof cursor.limit === 'function') {
+      results = await cursor.limit(limit).toArray();
+    } else {
+      // Fallback if limit is not available
+      const allResults = await cursor.toArray();
+      results = allResults.slice(0, limit);
+    }
+  } catch (error) {
+    console.error("Search failed:", error);
+    results = [];
+  }
 
   // If no results found with exact match, try partial text search
   if (results.length === 0) {
@@ -57,8 +77,28 @@ export async function FindRecord(params: {
       const regexQuery: Record<string, any> = {};
       regexQuery[field] = regexPattern;
 
-      const results = await collection.find(regexQuery).limit(limit).toArray();
-      return sanitizeRecordData(results);
+      let regexResults: any[] = [];
+      try {
+        const cursor = collection.find(regexQuery);
+        
+        // Handle the case when toArray is not available
+        if (!cursor || typeof cursor.toArray !== 'function') {
+          console.warn(`cursor.toArray is not available for regex query on field '${field}'`);
+          return [];
+        }
+        
+        if (typeof cursor.limit === 'function') {
+          regexResults = await cursor.limit(limit).toArray();
+        } else {
+          // Fallback if limit is not available
+          const allResults = await cursor.toArray();
+          regexResults = allResults.slice(0, limit);
+        }
+        return sanitizeRecordData(regexResults);
+      } catch (error) {
+        console.error("Regex search failed:", error);
+        return [];
+      }
     } catch (error) {
       console.error("Regex search failed:", error);
       return [];

@@ -53,8 +53,6 @@ describe("MCP Server", () => {
     // Clear all mocks
     vi.clearAllMocks();
 
-    // Import the server module to trigger the initialization
-    // This will execute the code in index.js which sets up the server
     // Mock the server initialization
     (Server as any).mockClear();
     mockSetRequestHandler.mockClear();

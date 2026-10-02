@@ -43,10 +43,8 @@ describe("CreateCollection Tool", () => {
     });
 
     // Verify the result
-    expect(result).toEqual({
-      success: true,
-      message: "Collection 'new_collection' created successfully",
-    });
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("new_collection");
   });
 
   it("should create a non-vector collection", async () => {
@@ -63,10 +61,8 @@ describe("CreateCollection Tool", () => {
     );
 
     // Verify the result
-    expect(result).toEqual({
-      success: true,
-      message: "Collection 'new_document_collection' created successfully",
-    });
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("new_document_collection");
   });
 
   it("should create a vector collection with custom dimensions", async () => {
@@ -90,9 +86,32 @@ describe("CreateCollection Tool", () => {
     );
 
     // Verify the result
-    expect(result).toEqual({
-      success: true,
-      message: "Collection 'custom_vector_collection' created successfully",
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("custom_vector_collection");
+  });
+
+  it("should create a vector collection with custom metric", async () => {
+    // Call the function with custom metric
+    const result = await CreateCollection({
+      collectionName: "custom_metric_collection",
+      vector: true,
+      metric: "euclidean",
     });
+
+    // Verify the mock was called with correct parameters
+    expect(mockDb.createCollection).toHaveBeenCalledTimes(1);
+    expect(mockDb.createCollection).toHaveBeenCalledWith(
+      "custom_metric_collection",
+      {
+        vector: {
+          dimension: 1536,
+          metric: "euclidean",
+        },
+      }
+    );
+
+    // Verify the result
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("custom_metric_collection");
   });
 });

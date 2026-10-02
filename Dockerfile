@@ -3,7 +3,7 @@ WORKDIR /app
 
 FROM node_base AS builder
 COPY package.json package-lock.json tsconfig.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts --omit-dev
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts --omit-dev --legacy-peer-deps
 
 COPY . ./
 RUN --mount=type=cache,target=/root/.npm npm run build
@@ -12,5 +12,5 @@ FROM node_base
 COPY package.json package-lock.json ./
 COPY --from=builder /app/build ./build
 ENV NODE_ENV=production
-RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts --omit-dev
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts --omit-dev --legacy-peer-deps
 ENTRYPOINT ["node", "/app/build/index.js"]

@@ -28,10 +28,13 @@ import { CreateRecord } from "./tools/CreateRecord.js";
 import { UpdateRecord } from "./tools/UpdateRecord.js";
 import { DeleteRecord } from "./tools/DeleteRecord.js";
 import { FindRecord } from "./tools/FindRecord.js";
+import { FindDistinctValues } from "./tools/FindDistinctValues.js";
 import { FindWithFilter } from "./tools/FindWithFilter.js";
 import { FindWithVector } from "./tools/FindWithVector.js";
 import { FindWithVectorize } from "./tools/FindWithVectorize.js";
 import { FindAndRerank } from "./tools/FindAndRerank.js";
+import { VectorSearch } from "./tools/VectorSearch.js";
+import { HybridSearch } from "./tools/HybridSearch.js";
 import { BulkCreateRecords } from "./tools/BulkCreateRecords.js";
 import { BulkUpdateRecords } from "./tools/BulkUpdateRecords.js";
 import { BulkDeleteRecords } from "./tools/BulkDeleteRecords.js";
@@ -63,6 +66,7 @@ import { GetDatabaseInfo } from "./tools/GetDatabaseInfo.js";
 import { OpenBrowser } from "./tools/OpenBrowser.js";
 import { HelpAddToClient } from "./tools/HelpAddToClient.js";
 import { sanitizeRecordData } from "./util/sanitize.js";
+import { AstraError, AstraErrorCode, createErrorFromException } from "./util/errors.js";
 
 const server = new Server(
   {
@@ -282,6 +286,26 @@ server.setRequestHandler("tools/call", async (request: any) => {
         };
       }
 
+      case "FindDistinctValues": {
+        const distinctValues = await FindDistinctValues({
+          collectionName: args.collectionName as string,
+          field: args.field as string,
+          filter: args.filter as Record<string, any> | undefined,
+        });
+        const sanitizedDistinctValues = sanitizeRecordData(distinctValues);
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                sanitizedDistinctValues.length === 0
+                  ? "No distinct values found."
+                  : JSON.stringify(sanitizedDistinctValues, null, 2),
+            },
+          ],
+        };
+      }
+
       case "FindWithFilter": {
         const records = await FindWithFilter({
           collectionName: args.collectionName as string,
@@ -320,6 +344,51 @@ server.setRequestHandler("tools/call", async (request: any) => {
             {
               type: "text",
               text: JSON.stringify(sanitizedRecords, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "VectorSearch": {
+        const vectorSearchResults = await VectorSearch({
+          collectionName: args.collectionName as string,
+          queryVector: args.queryVector as number[],
+          limit: args.limit as number | undefined,
+          minScore: args.minScore as number | undefined,
+          filter: args.filter as Record<string, any> | undefined,
+        });
+        const sanitizedVectorResults = sanitizeRecordData(vectorSearchResults);
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                sanitizedVectorResults.length === 0
+                  ? "No matching records found."
+                  : JSON.stringify(sanitizedVectorResults, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "HybridSearch": {
+        const hybridSearchResults = await HybridSearch({
+          collectionName: args.collectionName as string,
+          queryVector: args.queryVector as number[],
+          textQuery: args.textQuery as string,
+          weights: args.weights as { vector: number; text: number } | undefined,
+          limit: args.limit as number | undefined,
+          fields: args.fields as string[] | undefined,
+        });
+        const sanitizedHybridResults = sanitizeRecordData(hybridSearchResults);
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                sanitizedHybridResults.length === 0
+                  ? "No matching records found."
+                  : JSON.stringify(sanitizedHybridResults, null, 2),
             },
           ],
         };
@@ -719,16 +788,20 @@ server.setRequestHandler("tools/call", async (request: any) => {
   } catch (error) {
     console.error("Error executing tool:", error);
 
-    // Check if error is related to API endpoint or missing env vars
+    // Convert the error to a structured AstraError
+    const astraError = createErrorFromException(error);
+    
+    // Special handling for authentication errors
     if (
-      error instanceof Error &&
-      (error.message.includes("ASTRA_DB_API_ENDPOINT") ||
-        error.message.includes("ASTRA_DB_APPLICATION_TOKEN") ||
-        error.message.includes("Invalid URL") ||
-        error.message.includes("Failed to fetch") ||
-        error.message.includes("Network error") ||
-        !process.env.ASTRA_DB_API_ENDPOINT ||
-        !process.env.ASTRA_DB_APPLICATION_TOKEN)
+      astraError.code === AstraErrorCode.AUTH_MISSING_CREDENTIALS ||
+      (error instanceof Error &&
+        (error.message.includes("ASTRA_DB_API_ENDPOINT") ||
+          error.message.includes("ASTRA_DB_APPLICATION_TOKEN") ||
+          error.message.includes("Invalid URL") ||
+          error.message.includes("Failed to fetch") ||
+          error.message.includes("Network error") ||
+          !process.env.ASTRA_DB_API_ENDPOINT ||
+          !process.env.ASTRA_DB_APPLICATION_TOKEN))
     ) {
       return {
         content: [
@@ -739,13 +812,13 @@ server.setRequestHandler("tools/call", async (request: any) => {
         ],
       };
     }
-
+    
     return {
       content: [
         {
           type: "text",
-          text: `Error: ${
-            error instanceof Error ? error.message : String(error)
+          text: `Error [${astraError.code}]: ${astraError.message}${
+            astraError.details ? `\n\nDetails: ${JSON.stringify(astraError.details, null, 2)}` : ""
           }`,
         },
       ],
@@ -756,3 +829,5 @@ server.setRequestHandler("tools/call", async (request: any) => {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
+
+// Made with Bob

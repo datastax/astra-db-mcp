@@ -16,15 +16,36 @@ export async function BulkCreateRecords({
   records,
 }: BulkCreateRecordsArgs): Promise<BulkCreateRecordsResult> {
   const collection: Collection = db.collection(collectionName);
-
-  const insertPromises = records.map((record) => collection.insertOne(record));
-  const results = await Promise.all(insertPromises);
-  const ids = results
-    .map((result) => result.insertedId?.toString() || "")
-    .filter((id) => id !== "");
-
+  
+  let ids: string[] = [];
+  
+  try {
+    // Try to use insertMany for better performance
+    if (typeof collection.insertMany === 'function') {
+      const result = await collection.insertMany(records);
+      
+      // Extract the inserted IDs from the result
+      ids = Object.values(result.insertedIds || {})
+        .map((id) => id?.toString() || "")
+        .filter((id) => id !== "");
+    } else {
+      // Fallback to individual insertOne operations
+      for (const record of records) {
+        const result = await collection.insertOne(record);
+        if (result.insertedId) {
+          ids.push(result.insertedId.toString());
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error in bulk create:", error);
+    throw error;
+  }
+  
   return {
     message: `Successfully created ${ids.length} records`,
     ids,
   };
 }
+
+// Made with Bob

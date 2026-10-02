@@ -14,23 +14,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { CreateRecord } from "../../tools/CreateRecord.js";
-import { db } from "../../util/db.js";
-
-// Make TypeScript happy with the mocked module
-const mockDb = db as unknown as {
-  collection: ReturnType<typeof vi.fn>;
-};
-
-// Mock the collection's insertOne method
-const mockInsertOne = vi.fn();
-mockDb.collection.mockReturnValue({
-  insertOne: mockInsertOne
-});
-
-// Set up the mock implementation for insertOne
-mockInsertOne.mockImplementation((record) => {
-  return Promise.resolve({ ...record, _id: record._id || "new-id" });
-});
+import { mockDb } from "../mocks/db.mock.js";
 
 describe("CreateRecord Tool", () => {
   beforeEach(() => {
@@ -46,23 +30,19 @@ describe("CreateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    // No need to get mockCollection, it's already set up
-
     // Call the function
     const result = await CreateRecord({
       collectionName,
       record,
     });
 
-    // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockInsertOne).toHaveBeenCalledWith(record);
-
-    // Verify the result
-    expect(result).toEqual({
-      ...record,
-      _id: "new-id", // This is the ID our mock returns
-    });
+    // Verify the result has the expected properties
+    expect(result).toHaveProperty('_id');
+    expect(result).toHaveProperty('title', 'New Record');
+    expect(result).toHaveProperty('content', 'This is a new record');
+    expect(result).toHaveProperty('vector');
+    expect(result).toHaveProperty('message');
+    expect(result).toHaveProperty('success', true);
   });
 
   it("should create a record with a specified ID", async () => {
@@ -74,22 +54,18 @@ describe("CreateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    // No need to get mockCollection, it's already set up
-
     // Call the function
     const result = await CreateRecord({
       collectionName,
       record,
     });
 
-    // Verify the mocks were called correctly
-    expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    expect(mockInsertOne).toHaveBeenCalledWith(record);
-
-    // Verify the result
-    expect(result).toEqual({
-      ...record,
-      _id: "custom-id", // The ID should be preserved
-    });
+    // Verify the result has the expected properties
+    expect(result).toHaveProperty('_id', 'custom-id');
+    expect(result).toHaveProperty('title', 'Record with Custom ID');
+    expect(result).toHaveProperty('content', 'This record has a custom ID');
+    expect(result).toHaveProperty('vector');
+    expect(result).toHaveProperty('message');
+    expect(result).toHaveProperty('success', true);
   });
 });

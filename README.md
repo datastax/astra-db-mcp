@@ -100,6 +100,7 @@ The server provides a comprehensive suite of tools spanning Collections, Vector 
 - `DeleteRecord`: Delete a record by ID
 - `FindRecord`: Find records by exact field value match
 - `FindWithFilter`: Rich querying with MongoDB-style filter operators (`$and`, `$or`, `$gt`, `$in`, `$exists`, etc.)
+- `FindDistinctValues`: Find distinct values for a specific field in a collection
 - `BulkCreateRecords`: Insert multiple documents in batch
 - `BulkUpdateRecords`: Update multiple documents in batch
 - `BulkDeleteRecords`: Delete multiple documents in batch
@@ -108,6 +109,8 @@ The server provides a comprehensive suite of tools spanning Collections, Vector 
 - `FindWithVector`: Dense vector similarity search with optional metadata filters, similarity scores, and projection
 - `FindWithVectorize`: Natural language search query using Astra DB Vectorize serverless embeddings
 - `FindAndRerank`: Hybrid search (lexical + dense vector / auto-vectorize) with server-side reranking scores
+- `VectorSearch`: Vector similarity search with minScore threshold and projection
+- `HybridSearch`: Combine dense vector similarity and text search with weighted scoring
 
 ### 📊 Tables (Astra DB Data API v2)
 - `ListTables`: List all structured tables in the keyspace

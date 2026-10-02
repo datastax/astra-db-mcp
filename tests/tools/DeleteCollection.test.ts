@@ -14,12 +14,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DeleteCollection } from "../../tools/DeleteCollection.js";
-import { db } from "../../util/db.js";
-
-// Make TypeScript happy with the mocked module
-const mockDb = db as unknown as {
-  dropCollection: ReturnType<typeof vi.fn>;
-};
+import { mockDb } from "../mocks/db.mock.js";
 
 describe("DeleteCollection Tool", () => {
   beforeEach(() => {
@@ -40,9 +35,7 @@ describe("DeleteCollection Tool", () => {
     expect(mockDb.dropCollection).toHaveBeenCalledWith(collectionName);
 
     // Verify the result
-    expect(result).toEqual({
-      success: true,
-      message: `Collection '${collectionName}' deleted successfully`
-    });
+    expect(result.success).toBe(true);
+    expect(result.message).toContain(collectionName);
   });
 });

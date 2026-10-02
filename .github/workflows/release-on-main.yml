@@ -27,7 +27,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org/'
 
       - name: Install dependencies (including devDependencies)
-        run: npm ci
+        run: npm ci --legacy-peer-deps
         env:
           NODE_ENV: development
 

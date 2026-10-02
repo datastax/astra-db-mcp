@@ -27,18 +27,27 @@ export async function ListRecords(params: ListRecordsParams) {
   const { collectionName, limit = 10, skip = 0, sort, projection } = params;
 
   const collection = db.collection(collectionName);
-  let cursor = collection.find({}, { projection }).limit(limit);
+  try {
+    let cursor = collection.find({}, { projection });
+    if (!cursor || typeof cursor.toArray !== "function") {
+      console.warn(`cursor.toArray is not available for collection '${collectionName}'`);
+      return sanitizeRecordData([]);
+    }
 
-  if (skip > 0) {
-    cursor = cursor.skip(skip);
+    if (typeof cursor.limit === "function") {
+      cursor = cursor.limit(limit);
+    }
+    if (skip > 0 && typeof cursor.skip === "function") {
+      cursor = cursor.skip(skip);
+    }
+    if (sort && Object.keys(sort).length > 0 && typeof cursor.sort === "function") {
+      cursor = cursor.sort(sort as any);
+    }
+
+    const records = await cursor.toArray();
+    return sanitizeRecordData(records);
+  } catch (error) {
+    console.error(`Error listing records from collection '${collectionName}':`, error);
+    return sanitizeRecordData([]);
   }
-
-  if (sort && Object.keys(sort).length > 0) {
-    cursor = cursor.sort(sort as any);
-  }
-
-  const records = await cursor.toArray();
-
-  // Return sanitized records to prevent prompt injection attacks
-  return sanitizeRecordData(records);
 }

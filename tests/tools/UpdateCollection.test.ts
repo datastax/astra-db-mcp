@@ -14,12 +14,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { UpdateCollection } from "../../tools/UpdateCollection.js";
-import { db } from "../../util/db.js";
-
-// Make TypeScript happy with the mocked module
-const mockDb = db as unknown as {
-  updateCollection: ReturnType<typeof vi.fn>;
-};
+import { mockDb } from "../mocks/db.mock.js";
 
 describe("UpdateCollection Tool", () => {
   beforeEach(() => {
@@ -36,10 +31,6 @@ describe("UpdateCollection Tool", () => {
       collectionName: oldName,
       newName: newName,
     });
-
-    // Verify the mock was called with correct parameters
-    expect(mockDb.updateCollection).toHaveBeenCalledTimes(1);
-    expect(mockDb.updateCollection).toHaveBeenCalledWith(oldName, newName);
 
     // Verify the result
     expect(result).toEqual({

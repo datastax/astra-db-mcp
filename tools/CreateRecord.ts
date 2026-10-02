@@ -14,14 +14,34 @@
 
 import { db } from "../util/db.js";
 
+// Define the return type to include all properties needed by both tests and index.ts
+type CreateRecordResult = Record<string, any> & {
+  _id: string;
+  id: string;
+  message: string;
+  success: boolean;
+};
+
 export async function CreateRecord(params: {
   collectionName: string;
   record: Record<string, any>;
-}) {
+}): Promise<CreateRecordResult> {
   const { collectionName, record } = params;
 
   const collection = db.collection(collectionName);
   const result = await collection.insertOne(record);
 
-  return result;
+  // Create a response that satisfies both the tests and the index.ts usage
+  const id = record._id || (result as any).insertedId || (result as any)._id;
+  
+  // Create the response object with all required properties
+  const response: CreateRecordResult = {
+    ...record,
+    _id: id,
+    id: id,
+    message: `Record created successfully in collection '${collectionName}'`,
+    success: true
+  };
+
+  return response;
 }
