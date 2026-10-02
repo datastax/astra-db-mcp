@@ -76,7 +76,10 @@ jobs:
     #     env:
     #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish to npm
-        run: npm publish --access public
+      - name: Publish to npm (staged)
+        # Stages the package on the npm registry without requiring 2FA/OTP.
+        # The package is held in a staging area until a human approves and publishes it
+        # via the npm website or CLI. See: https://docs.npmjs.com/staged-publishing
+        run: npm stage publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
