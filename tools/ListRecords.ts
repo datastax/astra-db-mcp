@@ -15,33 +15,37 @@
 import { db } from "../util/db.js";
 import { sanitizeRecordData } from "../util/sanitize.js";
 
-export async function ListRecords(params: {
+export interface ListRecordsParams {
   collectionName: string;
   limit?: number;
-}) {
-  const { collectionName, limit = 10 } = params;
+  skip?: number;
+  sort?: Record<string, 1 | -1>;
+  projection?: Record<string, any>;
+}
+
+export async function ListRecords(params: ListRecordsParams) {
+  const { collectionName, limit = 10, skip = 0, sort, projection } = params;
 
   const collection = db.collection(collectionName);
-  
   try {
-    // Try to use the limit method if available
-    const cursor = collection.find({});
-    
-    // Handle the case when toArray is not available
-    if (!cursor || typeof cursor.toArray !== 'function') {
+    let cursor = collection.find({}, { projection });
+    if (!cursor || typeof cursor.toArray !== "function") {
       console.warn(`cursor.toArray is not available for collection '${collectionName}'`);
       return sanitizeRecordData([]);
     }
-    
-    if (typeof cursor.limit === 'function') {
-      const records = await cursor.limit(limit).toArray();
-      return sanitizeRecordData(records);
-    } else {
-      // Fallback if limit is not available
-      const allRecords = await cursor.toArray();
-      const limitedRecords = allRecords.slice(0, limit);
-      return sanitizeRecordData(limitedRecords);
+
+    if (typeof cursor.limit === "function") {
+      cursor = cursor.limit(limit);
     }
+    if (skip > 0 && typeof cursor.skip === "function") {
+      cursor = cursor.skip(skip);
+    }
+    if (sort && Object.keys(sort).length > 0 && typeof cursor.sort === "function") {
+      cursor = cursor.sort(sort as any);
+    }
+
+    const records = await cursor.toArray();
+    return sanitizeRecordData(records);
   } catch (error) {
     console.error(`Error listing records from collection '${collectionName}':`, error);
     return sanitizeRecordData([]);

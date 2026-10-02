@@ -21,8 +21,9 @@ export async function DeleteCollection(params: { collectionName: string }) {
     // Try to use dropCollection if available
     if (typeof db.dropCollection === 'function') {
       await db.dropCollection(collectionName);
+    } else if (typeof (db as any).deleteCollection === 'function') {
+      await (db as any).deleteCollection(collectionName);
     } else {
-      // If dropCollection is not available, log a warning
       console.warn(`No dropCollection method available for collection '${collectionName}'`);
     }
 

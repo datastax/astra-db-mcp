@@ -29,7 +29,7 @@ export async function UpdateRecord(params: {
 
   const result = await collection.updateOne(
     { _id: recordId },
-    { $set: updateData }
+    updateData
   );
 
   if (result.matchedCount === 0) {
@@ -39,7 +39,7 @@ export async function UpdateRecord(params: {
   }
 
   return {
-    success: true,
-    message: `Record '${recordId}' updated successfully in collection '${collectionName}'`,
+    ...updateData,
+    _id: recordId,
   };
 }

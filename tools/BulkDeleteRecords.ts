@@ -28,9 +28,9 @@ export async function BulkDeleteRecords({
   
   try {
     // Try to use bulkWrite for better performance
-    if (typeof collection.bulkWrite === 'function') {
+    if (typeof (collection as any).bulkWrite === 'function') {
       // Use bulkWrite for batch processing
-      const result = await collection.bulkWrite(deleteOperations);
+      const result = await (collection as any).bulkWrite(deleteOperations);
       
       // Get the count of deleted documents
       deletedCount = result.deletedCount || 0;
@@ -54,4 +54,3 @@ export async function BulkDeleteRecords({
   };
 }
 
-// Made with Bob

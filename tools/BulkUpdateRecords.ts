@@ -32,9 +32,9 @@ export async function BulkUpdateRecords({
   
   try {
     // Try to use bulkWrite for better performance
-    if (typeof collection.bulkWrite === 'function') {
+    if (typeof (collection as any).bulkWrite === 'function') {
       // Use bulkWrite for batch processing
-      const result = await collection.bulkWrite(updateOperations);
+      const result = await (collection as any).bulkWrite(updateOperations);
       
       // Get the count of modified documents
       updatedCount = result.modifiedCount || 0;
@@ -58,4 +58,3 @@ export async function BulkUpdateRecords({
   };
 }
 
-// Made with Bob

@@ -32,7 +32,7 @@ export async function CreateRecord(params: {
   const result = await collection.insertOne(record);
 
   // Create a response that satisfies both the tests and the index.ts usage
-  const id = record._id || result.insertedId;
+  const id = record._id || (result as any).insertedId || (result as any)._id;
   
   // Create the response object with all required properties
   const response: CreateRecordResult = {

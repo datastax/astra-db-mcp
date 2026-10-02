@@ -14,19 +14,19 @@
 
 import { vi } from "vitest";
 
-// Define types for our mock data
+// Define types for mock data
 interface Collection {
   name: string;
-  type: string;
+  type?: string;
 }
 
-interface Record {
+interface RecordType {
   _id: string;
   [key: string]: any;
 }
 
 interface RecordCollection {
-  [collectionName: string]: Record[];
+  [collectionName: string]: RecordType[];
 }
 
 // Mock collections data
@@ -42,13 +42,15 @@ const mockRecords: RecordCollection = {
       _id: "1",
       title: "Record 1",
       content: "Content 1",
-      vector: [0.1, 0.2, 0.3],
+      $vector: [0.1, 0.2, 0.3],
+      $similarity: 0.95,
     },
     {
       _id: "2",
       title: "Record 2",
       content: "Content 2",
-      vector: [0.4, 0.5, 0.6],
+      $vector: [0.4, 0.5, 0.6],
+      $similarity: 0.88,
     },
   ],
   test_collection2: [
@@ -65,153 +67,141 @@ const mockRecords: RecordCollection = {
   ],
 };
 
+function createMockCursor(items: any[]) {
+  const cursor: any = {
+    _items: [...items],
+    sort: vi.fn().mockImplementation(() => cursor),
+    limit: vi.fn().mockImplementation((n: number) => {
+      cursor._items = cursor._items.slice(0, n);
+      return cursor;
+    }),
+    skip: vi.fn().mockImplementation((n: number) => {
+      cursor._items = cursor._items.slice(n);
+      return cursor;
+    }),
+    project: vi.fn().mockImplementation(() => cursor),
+    includeSimilarity: vi.fn().mockImplementation(() => cursor),
+    includeScores: vi.fn().mockImplementation(() => cursor),
+    rerankQuery: vi.fn().mockImplementation(() => cursor),
+    rerankOn: vi.fn().mockImplementation(() => cursor),
+    toArray: vi.fn().mockImplementation(() => Promise.resolve(cursor._items)),
+  };
+  return cursor;
+}
+
+// Mock Table
+const mockTables = ["test_table1", "test_table2"];
+
+// Mock DB Admin
+export const mockDbAdmin = {
+  listKeyspaces: vi.fn().mockResolvedValue(["default_keyspace", "custom_keyspace"]),
+  createKeyspace: vi.fn().mockImplementation((name: string) => Promise.resolve({ keyspace: name })),
+  dropKeyspace: vi.fn().mockResolvedValue({ success: true }),
+  findEmbeddingProviders: vi.fn().mockResolvedValue({
+    providers: [{ name: "openai", models: ["text-embedding-3-small"] }],
+  }),
+  findRerankingProviders: vi.fn().mockResolvedValue({
+    providers: [{ name: "cohere", models: ["rerank-english-v3.0"] }],
+  }),
+  info: vi.fn().mockResolvedValue({
+    id: "mock-db-id",
+    name: "mock-db",
+    region: "us-east-1",
+    status: "ACTIVE",
+  }),
+  listDatabases: vi.fn().mockResolvedValue([{ name: "test_db", sizeOnDisk: 1000 }]),
+};
+
 // Create mock collection methods
 const createMockCollection = (collectionName: string) => {
-  // Create a mock cursor that properly supports chaining
-  const createMockCursor = (records?: any[]) => {
-    const cursor = {
-      toArray: vi.fn().mockImplementation(() => {
-        return Promise.resolve(records || mockRecords[collectionName] || []);
-      }),
-      limit: vi.fn(),
-      project: vi.fn(),
-      sort: vi.fn(),
-      skip: vi.fn(),
-    };
-    
-    // Make all methods return the cursor for chaining
-    cursor.limit.mockReturnValue(cursor);
-    cursor.project.mockReturnValue(cursor);
-    cursor.sort.mockReturnValue(cursor);
-    cursor.skip.mockReturnValue(cursor);
-    
-    return cursor;
-  };
+  const collectionRecords = mockRecords[collectionName] || [];
 
-  // Create the collection mock with all required methods
   const collectionMock = {
-    // Basic CRUD operations
-    find: vi.fn().mockImplementation((query = {}) => {
-      // Handle vector search queries
-      if (query.$vector) {
-        const limit = query.$vector.limit || 10;
-        const records = mockRecords[collectionName] || [];
-        return createMockCursor(records.slice(0, limit));
+    options: vi.fn().mockResolvedValue({
+      vector: { dimension: 1536, metric: "cosine" },
+    }),
+    indexes: vi.fn().mockResolvedValue([]),
+    find: vi.fn().mockImplementation((query: any = {}) => {
+      if (query?.$vector?.limit) {
+        return createMockCursor(collectionRecords.slice(0, query.$vector.limit));
       }
-      
-      // Handle hybrid search queries
-      if (query.$hybrid) {
-        const limit = query.$hybrid.limit || 10;
-        const records = mockRecords[collectionName] || [];
-        return createMockCursor(records.slice(0, limit));
+      if (query?.$hybrid?.limit) {
+        return createMockCursor(collectionRecords.slice(0, query.$hybrid.limit));
       }
-      
-      // Handle regular find queries
-      return createMockCursor();
+      return createMockCursor(collectionRecords);
+    }),
+    findAndRerank: vi.fn().mockImplementation(() => {
+      return createMockCursor(collectionRecords);
     }),
     findOne: vi.fn().mockImplementation(({ _id }: { _id: string }) => {
-      const records = mockRecords[collectionName] || [];
       return Promise.resolve(
-        records.find((record) => record._id === _id) || null
+        collectionRecords.find((record) => record._id === _id) || null
       );
     }),
     findOneBy: vi.fn().mockImplementation((field: string, value: any) => {
-      const records = mockRecords[collectionName] || [];
       return Promise.resolve(
-        records.find((record) => record[field] === value) || null
+        collectionRecords.find((record) => record[field] === value) || null
       );
     }),
-    insertOne: vi.fn().mockImplementation((record: Record) => {
-      return Promise.resolve({ 
+    insertOne: vi.fn().mockImplementation((record: RecordType) => {
+      return Promise.resolve({
+        ...record,
         insertedId: record._id || "new-id",
-        acknowledged: true
+        acknowledged: true,
       });
     }),
-    updateOne: vi.fn().mockImplementation(({ _id }: { _id: string }, update: any) => {
-      return Promise.resolve({ 
-        modifiedCount: 1,
-        matchedCount: 1,
-        acknowledged: true
-      });
-    }),
-    deleteOne: vi.fn().mockImplementation(({ _id }: { _id: string }) => {
-      return Promise.resolve({ 
-        deletedCount: 1,
-        acknowledged: true
-      });
-    }),
-    
-    // Bulk operations
-    insertMany: vi.fn().mockImplementation((records: Record[]) => {
+    insertMany: vi.fn().mockImplementation((records: RecordType[]) => {
       const insertedIds: { [key: string]: string } = {};
       records.forEach((record, index) => {
         insertedIds[index.toString()] = record._id || `new-id-${index}`;
       });
-      return Promise.resolve({ 
+      return Promise.resolve({
         insertedCount: records.length,
         insertedIds,
-        acknowledged: true
+        acknowledged: true,
       });
     }),
-    bulkWrite: vi.fn().mockImplementation((operations: any[]) => {
-      const result = {
-        insertedCount: 0,
-        modifiedCount: 0,
-        deletedCount: 0,
-        upsertedCount: 0,
-        insertedIds: {} as { [key: string]: string },
-        upsertedIds: {} as { [key: string]: string },
-        acknowledged: true
-      };
-      
-      operations.forEach((op, index) => {
-        if (op.insertOne) {
-          result.insertedCount++;
-          result.insertedIds[index.toString()] = op.insertOne.document._id || `new-id-${index}`;
-        } else if (op.updateOne) {
-          result.modifiedCount++;
-        } else if (op.deleteOne) {
-          result.deletedCount++;
-        }
+    updateOne: vi.fn().mockImplementation((filter: any, update: any) => {
+      return Promise.resolve({
+        modifiedCount: 1,
+        matchedCount: 1,
+        acknowledged: true,
       });
-      
-      return Promise.resolve(result);
     }),
-    
-    // Aggregation and utility methods
-    distinct: vi.fn().mockImplementation((field: string, filter: any = {}) => {
-      const records = mockRecords[collectionName] || [];
-      const distinctValues = new Set<any>();
-      
-      // Filter records if filter is provided
-      const filteredRecords = Object.keys(filter).length > 0
-        ? records.filter(record => {
-            for (const key in filter) {
-              if (record[key] !== filter[key]) return false;
-            }
-            return true;
-          })
-        : records;
-      
-      filteredRecords.forEach(record => {
+    updateMany: vi.fn().mockImplementation((filter: any, update: any) => {
+      return Promise.resolve({
+        modifiedCount: 2,
+        matchedCount: 2,
+        acknowledged: true,
+      });
+    }),
+    deleteOne: vi.fn().mockImplementation((filter: any) => {
+      return Promise.resolve({
+        deletedCount: 1,
+        acknowledged: true,
+      });
+    }),
+    deleteMany: vi.fn().mockImplementation((filter: any) => {
+      return Promise.resolve({
+        deletedCount: 2,
+        acknowledged: true,
+      });
+    }),
+    distinct: vi.fn().mockImplementation((field: string) => {
+      const values = new Set();
+      for (const record of collectionRecords) {
         if (record[field] !== undefined) {
-          distinctValues.add(record[field]);
+          values.add(record[field]);
         }
-      });
-      
-      return Promise.resolve(Array.from(distinctValues));
+      }
+      return Promise.resolve(Array.from(values));
     }),
-    estimatedDocumentCount: vi.fn().mockImplementation(() => {
-      return Promise.resolve(mockRecords[collectionName]?.length || 0);
+    estimatedDocumentCount: vi.fn().mockResolvedValue(42),
+    countDocuments: vi.fn().mockResolvedValue(42),
+    vectorSearch: vi.fn().mockImplementation((vector: number[], options: any = {}) => {
+      const limit = options.limit || 10;
+      return Promise.resolve(collectionRecords.slice(0, limit));
     }),
-    countDocuments: vi.fn().mockImplementation((query = {}) => {
-      return Promise.resolve(mockRecords[collectionName]?.length || 0);
-    }),
-    
-    // Vector search specific methods
-    createIndex: vi.fn().mockResolvedValue({ acknowledged: true }),
-    dropIndex: vi.fn().mockResolvedValue({ acknowledged: true }),
-    indexes: vi.fn().mockResolvedValue([]),
   };
 
   return collectionMock;
@@ -219,6 +209,7 @@ const createMockCollection = (collectionName: string) => {
 
 // Create mock DB client
 export const mockDb = {
+  keyspace: "default_keyspace",
   listCollections: vi.fn().mockResolvedValue(mockCollections),
   createCollection: vi.fn().mockImplementation((name: string, options: any = {}) => {
     return Promise.resolve({ name, ...options });
@@ -232,43 +223,68 @@ export const mockDb = {
   dropCollection: vi.fn().mockImplementation((collectionName: string) => {
     return Promise.resolve({ success: true, message: `Collection '${collectionName}' dropped successfully` });
   }),
-  collection: vi.fn().mockImplementation((collectionName: string) => {
-    // Store the mock collection so it can be accessed in tests
-    const mockCollection = createMockCollection(collectionName);
-    
-    // Reset the mock methods to ensure they're properly tracked
-    // Use type assertion to avoid TypeScript errors
-    const mockCollectionAny = mockCollection as any;
-    Object.keys(mockCollection).forEach(key => {
-      if (typeof mockCollectionAny[key] === 'function' && typeof mockCollectionAny[key].mockClear === 'function') {
-        mockCollectionAny[key].mockClear();
-      }
-    });
-    
-    return mockCollection;
-  }),
   collectionExists: vi.fn().mockImplementation((collectionName: string) => {
-    // For testing purposes, always return true for "old_collection" to make UpdateCollection test pass
     if (collectionName === "old_collection") return Promise.resolve(true);
-    // Also return true for test_collection to make DeleteCollection test pass
     if (collectionName === "test_collection") return Promise.resolve(true);
     return Promise.resolve(mockCollections.some(c => c.name === collectionName));
   }),
-  admin: vi.fn().mockReturnValue({
-    listDatabases: vi.fn().mockResolvedValue([{ name: "test_db", sizeOnDisk: 1000 }]),
+  listTables: vi.fn().mockResolvedValue(mockTables),
+  createTable: vi.fn().mockImplementation((name: string, options: any) => {
+    return Promise.resolve({ name, ...options });
+  }),
+  dropTable: vi.fn().mockResolvedValue({ success: true }),
+  admin: vi.fn().mockReturnValue(mockDbAdmin),
+  collection: vi.fn().mockImplementation((collectionName: string) => {
+    return createMockCollection(collectionName);
+  }),
+  table: vi.fn().mockImplementation((tableName: string) => {
+    return {
+      name: tableName,
+      alter: vi.fn().mockResolvedValue({ success: true }),
+      createIndex: vi.fn().mockResolvedValue({ success: true }),
+      createVectorIndex: vi.fn().mockResolvedValue({ success: true }),
+      find: vi.fn().mockImplementation(() => {
+        return createMockCursor([{ id: 1, name: "Row 1" }]);
+      }),
+      findOne: vi.fn().mockResolvedValue({ id: 1, name: "Row 1" }),
+      insertOne: vi.fn().mockResolvedValue({ insertedId: "row-1" }),
+      insertMany: vi.fn().mockResolvedValue({ insertedIds: ["row-1", "row-2"] }),
+      updateOne: vi.fn().mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
+      updateMany: vi.fn().mockResolvedValue({ matchedCount: 2, modifiedCount: 2 }),
+      deleteOne: vi.fn().mockResolvedValue({ deletedCount: 1 }),
+      deleteMany: vi.fn().mockResolvedValue({ deletedCount: 2 }),
+    };
   }),
 };
+
+let activeMockKeyspace = "default_keyspace";
+
+export function setDbKeyspace(keyspaceName: string): void {
+  activeMockKeyspace = keyspaceName;
+}
+
+export function getDbKeyspace(): string | undefined {
+  return activeMockKeyspace;
+}
+
+export function getDbAdmin() {
+  return mockDbAdmin;
+}
 
 // Create vi.mock for the db module
 vi.mock("../../util/db.js", () => {
   return {
     db: mockDb,
+    getDbAdmin: () => mockDbAdmin,
+    setDbKeyspace: (name: string) => { activeMockKeyspace = name; },
+    getDbKeyspace: () => activeMockKeyspace,
   };
 });
 
 // Mock the DataAPIClient
 vi.mock("@datastax/astra-db-ts", () => {
   return {
+    vector: vi.fn().mockImplementation((arr: number[]) => arr),
     DataAPIClient: vi.fn().mockImplementation(() => {
       return {
         db: vi.fn().mockReturnValue(mockDb),
@@ -281,5 +297,3 @@ vi.mock("@datastax/astra-db-ts", () => {
 vi.mock("dotenv/config", () => {
   return {};
 });
-
-// Made with Bob

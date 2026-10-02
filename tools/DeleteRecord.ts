@@ -30,7 +30,7 @@ export async function DeleteRecord(params: {
   }
 
   return {
-    success: true,
-    message: `Record '${recordId}' deleted successfully from collection '${collectionName}'`,
+    _id: recordId,
+    deleted: true,
   };
 }

@@ -84,138 +84,59 @@ Once added, your editor will be fully connected to your Astra DB database.
 
 ## Available Tools
 
-The server provides the following tools for interacting with Astra DB:
+The server provides a comprehensive suite of tools spanning Collections, Vector Search, Tables, Keyspaces, and Administration:
 
-### Collection Management
-- `GetCollections`: Get all collections in the database
-- `CreateCollection`: Create a new collection in the database (with vector support)
-- `UpdateCollection`: Update an existing collection in the database
-- `DeleteCollection`: Delete a collection from the database
-- `EstimateDocumentCount`: Get estimate of the number of documents in a collection
-
-### Record Operations
-- `ListRecords`: List records from a collection in the database
-- `GetRecord`: Get a specific record from a collection by ID
-- `CreateRecord`: Create a new record in a collection
-- `UpdateRecord`: Update an existing record in a collection
-- `DeleteRecord`: Delete a record from a collection
-- `FindRecord`: Find records in a collection by field value
+### 📁 Collections & Documents
+- `GetCollections`: Get all collections in the active keyspace
+- `GetCollectionInfo`: Inspect collection options, vector settings, and default ID configuration
+- `CreateCollection`: Create a collection with vector options, distance metrics (`cosine`, `euclidean`, `dot_product`), and auto-vectorize configurations
+- `UpdateCollection`: Update or rename a collection
+- `DeleteCollection`: Delete a collection
+- `EstimateDocumentCount`: Get an approximate count of documents in a collection
+- `ListRecords`: List records with optional sorting, pagination (`skip`), and projection
+- `GetRecord`: Get a specific record by ID
+- `CreateRecord`: Insert a single document
+- `UpdateRecord`: Update a record
+- `DeleteRecord`: Delete a record by ID
+- `FindRecord`: Find records by exact field value match
+- `FindWithFilter`: Rich querying with MongoDB-style filter operators (`$and`, `$or`, `$gt`, `$in`, `$exists`, etc.)
 - `FindDistinctValues`: Find distinct values for a specific field in a collection
+- `BulkCreateRecords`: Insert multiple documents in batch
+- `BulkUpdateRecords`: Update multiple documents in batch
+- `BulkDeleteRecords`: Delete multiple documents in batch
 
-### Bulk Operations
-- `BulkCreateRecords`: Create multiple records in a collection at once
-- `BulkUpdateRecords`: Update multiple records in a collection at once
-- `BulkDeleteRecords`: Delete multiple records from a collection at once
+### 🧠 Vector Search & Reranking
+- `FindWithVector`: Dense vector similarity search with optional metadata filters, similarity scores, and projection
+- `FindWithVectorize`: Natural language search query using Astra DB Vectorize serverless embeddings
+- `FindAndRerank`: Hybrid search (lexical + dense vector / auto-vectorize) with server-side reranking scores
+- `VectorSearch`: Vector similarity search with minScore threshold and projection
+- `HybridSearch`: Combine dense vector similarity and text search with weighted scoring
 
-### Vector Search
-- `VectorSearch`: Perform vector similarity search on vector embeddings
-- `HybridSearch`: Combine vector similarity search with text search
+### 📊 Tables (Astra DB Data API v2)
+- `ListTables`: List all structured tables in the keyspace
+- `CreateTable`: Create a typed table with column definitions and primary keys
+- `AlterTable`: Add or drop columns (including vector columns)
+- `DropTable`: Drop a table
+- `QueryTable`: Query table rows with filters, sorting, projection, and pagination
+- `InsertTableRow`: Insert a single row or batch of rows into a table
+- `UpdateTableRow`: Update matching rows in a table
+- `DeleteTableRow`: Delete matching rows from a table
+- `CreateTableIndex`: Create a secondary index on a table column
+- `CreateTableVectorIndex`: Create a vector index on a table column with similarity metrics
 
-### Utility
-- `OpenBrowser`: Open a web browser for authentication and setup
-- `HelpAddToClient`: Get assistance with adding Astra DB client to your MCP client
-## New Features and Capabilities
+### 🔑 Keyspaces & Administration
+- `ListKeyspaces`: List all keyspaces in the database
+- `CreateKeyspace`: Create a new keyspace with optional automatic switching
+- `DropKeyspace`: Drop a keyspace
+- `UseKeyspace`: Switch the active working keyspace for subsequent operations
+- `GetCurrentKeyspace`: Inspect the active keyspace name
+- `ListEmbeddingProviders`: Discover supported embedding models and providers
+- `ListRerankingProviders`: Discover supported reranking models
+- `GetDatabaseInfo`: Retrieve environment metadata (ID, region, status, keyspaces)
 
-### Vector Search Capabilities
-
-The Astra DB MCP server now includes powerful vector search capabilities for AI applications:
-
-#### VectorSearch
-
-Perform similarity search on vector embeddings:
-
-```javascript
-// Example usage
-const results = await VectorSearch({
-  collectionName: "my_vector_collection",
-  queryVector: [0.1, 0.2, 0.3, ...], // Your embedding vector
-  limit: 5,                          // Optional: Number of results to return (default: 10)
-  minScore: 0.7,                     // Optional: Minimum similarity score threshold
-  filter: { category: "article" }    // Optional: Additional filter criteria
-});
-```
-
-#### HybridSearch
-
-Combine vector similarity search with text search for more accurate results:
-
-```javascript
-// Example usage
-const results = await HybridSearch({
-  collectionName: "my_vector_collection",
-  queryVector: [0.1, 0.2, 0.3, ...], // Your embedding vector
-  textQuery: "climate change",        // Text query to search for
-  weights: {                          // Optional: Weights for hybrid search
-    vector: 0.7,                      // Weight for vector similarity (0.0-1.0)
-    text: 0.3                         // Weight for text relevance (0.0-1.0)
-  },
-  limit: 5,                           // Optional: Number of results to return
-  fields: ["title", "content"]        // Optional: Fields to search in for text query
-});
-```
-
-### Enhanced Collection Creation
-
-The `CreateCollection` tool now supports more vector configuration options:
-
-```javascript
-// Example usage
-const result = await CreateCollection({
-  collectionName: "my_vector_collection",
-  vector: true,                       // Enable vector search
-  dimension: 1536,                    // Vector dimension (e.g., 1536 for OpenAI embeddings)
-  metric: "cosine"                    // Similarity metric: "cosine", "euclidean", or "dot_product"
-});
-```
-
-### Finding Distinct Values
-
-The new `FindDistinctValues` tool allows you to find unique values for a field:
-
-```javascript
-// Example usage
-const distinctValues = await FindDistinctValues({
-  collectionName: "my_collection",
-  field: "category",                  // Field to find distinct values for
-  filter: { active: true }            // Optional: Filter to apply
-});
-```
-
-### Optimized Bulk Operations
-
-Bulk operations now use native batch processing for better performance:
-
-```javascript
-// Example: Bulk create records
-const result = await BulkCreateRecords({
-  collectionName: "my_collection",
-  records: [
-    { title: "Record 1", content: "Content 1" },
-    { title: "Record 2", content: "Content 2" },
-    // ... more records
-  ]
-});
-
-// Example: Bulk update records
-const updateResult = await BulkUpdateRecords({
-  collectionName: "my_collection",
-  records: [
-    { id: "record1", record: { title: "Updated Title 1" } },
-    { id: "record2", record: { title: "Updated Title 2" } },
-    // ... more records
-  ]
-});
-
-// Example: Bulk delete records
-const deleteResult = await BulkDeleteRecords({
-  collectionName: "my_collection",
-  recordIds: ["record1", "record2", "record3"]
-});
-```
-
-### Improved Error Handling
-
-The server now provides more detailed error messages with error codes to help diagnose issues more easily.
+### 🛠️ Utilities
+- `OpenBrowser`: Open a browser for authentication/setup
+- `HelpAddToClient`: Assistance with MCP client installation
 
 ## Changelog
 All notable changes to this project will be documented in [this file](./CHANGELOG.md).

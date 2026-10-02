@@ -12,24 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DeleteRecord } from "../../tools/DeleteRecord.js";
 import { mockDb } from "../mocks/db.mock.js";
-
-// Import the mock to ensure it's applied
-import "../mocks/db.mock.js";
 
 describe("DeleteRecord Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.collection.mockClear();
+    vi.clearAllMocks();
   });
 
   it("should delete a record from a collection", async () => {
     const collectionName = "test_collection1";
     const recordId = "1";
-
-    const mockCollection = mockDb.collection(collectionName);
 
     // Call the function
     const result = await DeleteRecord({
@@ -39,11 +34,9 @@ describe("DeleteRecord Tool", () => {
 
     // Verify the mocks were called correctly
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    // The implementation might use different methods, so we'll be more flexible
-    expect(mockCollection.deleteOne).toBeDefined();
 
-    // Verify the result has success property
-    expect(result).toHaveProperty('success', true);
-    expect(result).toHaveProperty('message');
+    // Verify the result properties
+    expect(result).toHaveProperty('_id', recordId);
+    expect(result).toHaveProperty('deleted', true);
   });
 });

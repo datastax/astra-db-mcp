@@ -18,8 +18,30 @@ import { DataAPIClient } from "@datastax/astra-db-ts";
 const client = new DataAPIClient(process.env.ASTRA_DB_APPLICATION_TOKEN);
 
 const endpoint = process.env.ASTRA_DB_API_ENDPOINT || "https://api.astra.datastax.com";
-const keyspace = process.env.ASTRA_DB_KEYSPACE;
+let currentKeyspace = process.env.ASTRA_DB_KEYSPACE;
 
-const dbOptions = keyspace ? { keyspace: keyspace } : undefined;
+export let db = client.db(endpoint, currentKeyspace ? { keyspace: currentKeyspace } : undefined);
 
-export const db = client.db(endpoint, dbOptions);
+/**
+ * Switch the active keyspace for the db instance
+ */
+export function setDbKeyspace(keyspaceName: string): void {
+  currentKeyspace = keyspaceName;
+  db = client.db(endpoint, { keyspace: keyspaceName });
+}
+
+/**
+ * Get current keyspace name
+ */
+export function getDbKeyspace(): string | undefined {
+  return currentKeyspace || db.keyspace;
+}
+
+/**
+ * Get the DbAdmin instance for keyspace and database admin operations
+ */
+export function getDbAdmin() {
+  return db.admin();
+}
+
+export { client };

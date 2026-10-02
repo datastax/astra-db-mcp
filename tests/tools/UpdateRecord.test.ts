@@ -12,17 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { UpdateRecord } from "../../tools/UpdateRecord.js";
 import { mockDb } from "../mocks/db.mock.js";
-
-// Import the mock to ensure it's applied
-import "../mocks/db.mock.js";
 
 describe("UpdateRecord Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.collection.mockClear();
+    vi.clearAllMocks();
   });
 
   it("should update a record in a collection", async () => {
@@ -34,8 +31,6 @@ describe("UpdateRecord Tool", () => {
       vector: [0.7, 0.8, 0.9],
     };
 
-    const mockCollection = mockDb.collection(collectionName);
-
     // Call the function
     const result = await UpdateRecord({
       collectionName,
@@ -45,11 +40,9 @@ describe("UpdateRecord Tool", () => {
 
     // Verify the mocks were called correctly
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-    // The implementation might use different methods, so we'll be more flexible
-    expect(mockCollection.updateOne).toBeDefined();
 
-    // Verify the result has success property
-    expect(result).toHaveProperty('success', true);
-    expect(result).toHaveProperty('message');
+    // Verify the result
+    expect(result).toHaveProperty('_id', recordId);
+    expect(result).toHaveProperty('title', 'Updated Record');
   });
 });

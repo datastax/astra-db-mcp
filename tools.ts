@@ -16,9 +16,11 @@ import type { Schema } from "jsonschema";
 
 export type ToolName =
   | "GetCollections"
+  | "GetCollectionInfo"
   | "CreateCollection"
   | "UpdateCollection"
   | "DeleteCollection"
+  | "EstimateDocumentCount"
   | "ListRecords"
   | "GetRecord"
   | "CreateRecord"
@@ -26,25 +28,52 @@ export type ToolName =
   | "DeleteRecord"
   | "FindRecord"
   | "FindDistinctValues"
+  | "FindWithFilter"
+  | "FindWithVector"
+  | "FindWithVectorize"
+  | "FindAndRerank"
+  | "VectorSearch"
+  | "HybridSearch"
   | "BulkCreateRecords"
   | "BulkUpdateRecords"
   | "BulkDeleteRecords"
+  | "ListTables"
+  | "CreateTable"
+  | "AlterTable"
+  | "DropTable"
+  | "QueryTable"
+  | "InsertTableRow"
+  | "UpdateTableRow"
+  | "DeleteTableRow"
+  | "CreateTableIndex"
+  | "CreateTableVectorIndex"
+  | "ListKeyspaces"
+  | "CreateKeyspace"
+  | "DropKeyspace"
+  | "UseKeyspace"
+  | "GetCurrentKeyspace"
+  | "ListEmbeddingProviders"
+  | "ListRerankingProviders"
+  | "GetDatabaseInfo"
   | "OpenBrowser"
-  | "HelpAddToClient"
-  | "EstimateDocumentCount"
-  | "VectorSearch"
-  | "HybridSearch";
+  | "HelpAddToClient";
 
-type Tool = {
+export type Tool = {
   name: ToolName;
   description: string;
-  inputSchema: Schema;
+  inputSchema: {
+    type: "object";
+    properties?: Record<string, any>;
+    required?: string[];
+    [key: string]: any;
+  };
 };
 
 export const tools: Tool[] = [
+  // Collections
   {
     name: "GetCollections",
-    description: "Get all collections in the Astra DB database",
+    description: "Get all collections in the active Astra DB keyspace",
     inputSchema: {
       type: "object",
       properties: {},
@@ -52,8 +81,22 @@ export const tools: Tool[] = [
     },
   },
   {
+    name: "GetCollectionInfo",
+    description: "Get metadata, options, vector settings, and defaultId type of a collection",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the collection to inspect",
+        },
+      },
+      required: ["collectionName"],
+    },
+  },
+  {
     name: "CreateCollection",
-    description: "Create a new collection in the database",
+    description: "Create a new collection with optional vector, metric, auto-vectorize service, or indexing options",
     inputSchema: {
       type: "object",
       properties: {
@@ -68,16 +111,41 @@ export const tools: Tool[] = [
         },
         dimension: {
           type: "number",
-          description:
-            "The dimensions of the vector collection, if vector is true",
+          description: "Vector dimensions (e.g., 1536 for OpenAI, 384 for MiniLM)",
           default: 1536,
         },
         metric: {
           type: "string",
-          description: "The similarity metric to use for vector search (cosine, euclidean, or dot_product)",
+          enum: ["cosine", "euclidean", "dot_product"],
+          description: "Similarity metric for vector comparisons",
           default: "cosine",
-          enum: ["cosine", "euclidean", "dot_product"]
-        }
+        },
+        service: {
+          type: "object",
+          description: "Vectorize auto-embedding provider configuration",
+          properties: {
+            provider: { type: "string", description: "Embedding provider name (e.g., 'openai', 'cohere', 'nvidia')" },
+            modelName: { type: "string", description: "Model name for embedding generation" },
+            parameters: { type: "object", description: "Optional provider-specific model parameters" },
+            authentication: { type: "object", description: "Optional provider authentication tokens/keys" },
+          },
+          required: ["provider", "modelName"],
+        },
+        defaultId: {
+          type: "object",
+          description: "Default ID generation type",
+          properties: {
+            type: { type: "string", enum: ["objectId", "uuid", "uuidv6", "uuidv7", "default"] },
+          },
+        },
+        indexing: {
+          type: "object",
+          description: "Collection indexing rules",
+          properties: {
+            allow: { type: "array", items: { type: "string" } },
+            deny: { type: "array", items: { type: "string" } },
+          },
+        },
       },
       required: ["collectionName"],
     },
@@ -115,8 +183,24 @@ export const tools: Tool[] = [
     },
   },
   {
+    name: "EstimateDocumentCount",
+    description: "Estimate the number of documents in a collection using a fast, approximate count method",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the collection to estimate document count for",
+        },
+      },
+      required: ["collectionName"],
+    },
+  },
+
+  // Document Operations & Queries
+  {
     name: "ListRecords",
-    description: "List records from a collection in the database",
+    description: "List records from a collection with optional sorting, pagination, and projection",
     inputSchema: {
       type: "object",
       properties: {
@@ -126,8 +210,21 @@ export const tools: Tool[] = [
         },
         limit: {
           type: "number",
-          description: "Maximum number of records to return",
+          description: "Maximum number of records to return (default: 10)",
           default: 10,
+        },
+        skip: {
+          type: "number",
+          description: "Number of documents to skip for pagination",
+          default: 0,
+        },
+        sort: {
+          type: "object",
+          description: "Sort criteria object, e.g. { createdAt: -1 }",
+        },
+        projection: {
+          type: "object",
+          description: "Projection object to include/exclude specific fields",
         },
       },
       required: ["collectionName"],
@@ -211,7 +308,7 @@ export const tools: Tool[] = [
   },
   {
     name: "FindRecord",
-    description: "Find records in a collection by field value",
+    description: "Find records in a collection by a single field value",
     inputSchema: {
       type: "object",
       properties: {
@@ -221,8 +318,7 @@ export const tools: Tool[] = [
         },
         field: {
           type: "string",
-          description:
-            "Field name to search by (e.g., 'title', '_id', or any property)",
+          description: "Field name to search by (e.g., 'title', '_id', or any property)",
         },
         value: {
           type: "string",
@@ -249,14 +345,182 @@ export const tools: Tool[] = [
         },
         field: {
           type: "string",
-          description: "Field name to find distinct values for",
+          description: "Field name to get distinct values for",
         },
         filter: {
           type: "object",
-          description: "Optional filter to apply before finding distinct values",
+          description: "Optional filter criteria to apply before finding distinct values",
         },
       },
       required: ["collectionName", "field"],
+    },
+  },
+  {
+    name: "FindWithFilter",
+    description: "Find records in a collection using rich MongoDB-style filter expressions ($and, $or, $gt, $in, $exists, etc.) with sorting and pagination",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the collection to search in",
+        },
+        filter: {
+          type: "object",
+          description: "Filter criteria (e.g. { age: { $gt: 25 }, status: { $in: ['active', 'pending'] } })",
+        },
+        sort: {
+          type: "object",
+          description: "Sort criteria, e.g. { createdAt: -1 }",
+        },
+        projection: {
+          type: "object",
+          description: "Projection object to select specific fields",
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of records to return",
+          default: 10,
+        },
+        skip: {
+          type: "number",
+          description: "Number of records to skip",
+          default: 0,
+        },
+      },
+      required: ["collectionName", "filter"],
+    },
+  },
+  {
+    name: "FindWithVector",
+    description: "Find records via vector similarity search using raw vector embeddings",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the vector collection",
+        },
+        vector: {
+          type: "array",
+          items: { type: "number" },
+          description: "Dense vector array (e.g. [0.12, 0.45, -0.31, ...])",
+        },
+        filter: {
+          type: "object",
+          description: "Optional metadata filter criteria applied alongside vector search",
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of nearest records to return",
+          default: 10,
+        },
+        skip: {
+          type: "number",
+          description: "Number of records to skip",
+          default: 0,
+        },
+        includeSimilarity: {
+          type: "boolean",
+          description: "Whether to return the $similarity score with each document",
+          default: true,
+        },
+        projection: {
+          type: "object",
+          description: "Projection object to include/exclude fields",
+        },
+      },
+      required: ["collectionName", "vector"],
+    },
+  },
+  {
+    name: "FindWithVectorize",
+    description: "Find records in a vectorized collection using plain text (auto-vectorization using collection's embedding service)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the vectorize-enabled collection",
+        },
+        vectorize: {
+          type: "string",
+          description: "Natural language search query to auto-embed and search",
+        },
+        filter: {
+          type: "object",
+          description: "Optional metadata filter criteria",
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of nearest records to return",
+          default: 10,
+        },
+        skip: {
+          type: "number",
+          description: "Number of records to skip",
+          default: 0,
+        },
+        includeSimilarity: {
+          type: "boolean",
+          description: "Whether to return $similarity score",
+          default: true,
+        },
+        projection: {
+          type: "object",
+          description: "Projection object to include/exclude fields",
+        },
+      },
+      required: ["collectionName", "vectorize"],
+    },
+  },
+  {
+    name: "FindAndRerank",
+    description: "Perform hybrid (lexical + vector) search with optional reranking on a collection",
+    inputSchema: {
+      type: "object",
+      properties: {
+        collectionName: {
+          type: "string",
+          description: "Name of the collection",
+        },
+        filter: {
+          type: "object",
+          description: "Optional filter criteria",
+        },
+        hybrid: {
+          type: "object",
+          description: "Hybrid search specifications",
+          properties: {
+            vector: { type: "array", items: { type: "number" }, description: "Explicit query vector" },
+            vectorize: { type: "string", description: "Query string to vectorize" },
+            lexical: { type: "string", description: "Lexical search query string" },
+          },
+        },
+        rerankQuery: {
+          type: "string",
+          description: "Query string used by the reranker model",
+        },
+        rerankOn: {
+          type: "string",
+          description: "Document field name to perform reranking on",
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of top reranked records to return",
+          default: 10,
+        },
+        includeScores: {
+          type: "boolean",
+          description: "Whether to return $similarity and $rerankerScore",
+          default: true,
+        },
+        projection: {
+          type: "object",
+          description: "Projection object to select specific fields",
+        },
+      },
+      required: ["collectionName", "hybrid"],
     },
   },
   {
@@ -333,6 +597,368 @@ export const tools: Tool[] = [
       required: ["collectionName", "recordIds"],
     },
   },
+
+  // Tables (Astra DB Data API v2)
+  {
+    name: "ListTables",
+    description: "List all tables in the current keyspace",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "CreateTable",
+    description: "Create a structured table with typed columns and primary key in Astra DB",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table to create",
+        },
+        definition: {
+          type: "object",
+          description: "Table schema definition with column types and primary key",
+          properties: {
+            columns: {
+              type: "object",
+              description: "Mapping of column names to types (e.g. text, int, bigint, boolean, timestamp, uuid, vector)",
+            },
+            primaryKey: {
+              description: "Primary key definition (single column name, array of partition/clustering keys, or composite primary key object)",
+            },
+          },
+          required: ["columns", "primaryKey"],
+        },
+        ifNotExists: {
+          type: "boolean",
+          description: "Do not error if table already exists",
+          default: false,
+        },
+      },
+      required: ["tableName", "definition"],
+    },
+  },
+  {
+    name: "AlterTable",
+    description: "Alter a table schema (add columns, drop columns, add vector columns)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table to alter",
+        },
+        operation: {
+          type: "object",
+          description: "Alter operations object (e.g., { addColumns: { age: 'int' } })",
+          properties: {
+            addColumns: { type: "object", description: "Columns to add with their types" },
+            dropColumns: { type: "array", items: { type: "string" }, description: "Column names to drop" },
+            addVectorColumns: { type: "object", description: "Vector columns to add" },
+          },
+        },
+      },
+      required: ["tableName", "operation"],
+    },
+  },
+  {
+    name: "DropTable",
+    description: "Drop a table from the current keyspace",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table to drop",
+        },
+        ifExists: {
+          type: "boolean",
+          description: "Do not error if table does not exist",
+          default: false,
+        },
+      },
+      required: ["tableName"],
+    },
+  },
+  {
+    name: "QueryTable",
+    description: "Query rows in a table with filter, sorting, pagination, and projection",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table to query",
+        },
+        filter: {
+          type: "object",
+          description: "Filter criteria for rows",
+        },
+        sort: {
+          type: "object",
+          description: "Sort criteria object",
+        },
+        projection: {
+          type: "object",
+          description: "Columns to include in result",
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of rows to return",
+          default: 10,
+        },
+        skip: {
+          type: "number",
+          description: "Number of rows to skip",
+          default: 0,
+        },
+      },
+      required: ["tableName"],
+    },
+  },
+  {
+    name: "InsertTableRow",
+    description: "Insert a single row or multiple rows into a table",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table",
+        },
+        row: {
+          type: "object",
+          description: "Single row object to insert",
+        },
+        rows: {
+          type: "array",
+          items: { type: "object" },
+          description: "Multiple row objects to insert in batch",
+        },
+      },
+      required: ["tableName"],
+    },
+  },
+  {
+    name: "UpdateTableRow",
+    description: "Update one or multiple rows matching a filter in a table",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table",
+        },
+        filter: {
+          type: "object",
+          description: "Filter to match rows to update",
+        },
+        update: {
+          type: "object",
+          description: "Update operation payload (e.g. { $set: { status: 'active' } })",
+        },
+        many: {
+          type: "boolean",
+          description: "Whether to update all matching rows or just one",
+          default: false,
+        },
+      },
+      required: ["tableName", "filter", "update"],
+    },
+  },
+  {
+    name: "DeleteTableRow",
+    description: "Delete one or multiple rows matching a filter from a table",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table",
+        },
+        filter: {
+          type: "object",
+          description: "Filter to match rows to delete",
+        },
+        many: {
+          type: "boolean",
+          description: "Whether to delete all matching rows or just one",
+          default: false,
+        },
+      },
+      required: ["tableName", "filter"],
+    },
+  },
+  {
+    name: "CreateTableIndex",
+    description: "Create a regular secondary index on a table column",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table",
+        },
+        indexName: {
+          type: "string",
+          description: "Name of the index to create",
+        },
+        column: {
+          type: "string",
+          description: "Column name to index",
+        },
+        options: {
+          type: "object",
+          description: "Index options (ascii, caseSensitive, normalize)",
+          properties: {
+            ascii: { type: "boolean" },
+            caseSensitive: { type: "boolean" },
+            normalize: { type: "boolean" },
+          },
+        },
+      },
+      required: ["tableName", "indexName", "column"],
+    },
+  },
+  {
+    name: "CreateTableVectorIndex",
+    description: "Create a vector index on a vector column in a table",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tableName: {
+          type: "string",
+          description: "Name of the table",
+        },
+        indexName: {
+          type: "string",
+          description: "Name of the vector index",
+        },
+        column: {
+          type: "string",
+          description: "Vector column name",
+        },
+        metric: {
+          type: "string",
+          enum: ["cosine", "euclidean", "dot_product"],
+          description: "Distance metric for vector search",
+          default: "cosine",
+        },
+        service: {
+          type: "object",
+          description: "Vectorize auto-embedding provider settings if applicable",
+          properties: {
+            provider: { type: "string" },
+            modelName: { type: "string" },
+            parameters: { type: "object" },
+            authentication: { type: "object" },
+          },
+        },
+      },
+      required: ["tableName", "indexName", "column"],
+    },
+  },
+
+  // Keyspace Administration
+  {
+    name: "ListKeyspaces",
+    description: "List all keyspaces in the Astra DB database",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "CreateKeyspace",
+    description: "Create a new keyspace in the Astra DB database",
+    inputSchema: {
+      type: "object",
+      properties: {
+        keyspaceName: {
+          type: "string",
+          description: "Name of the keyspace to create",
+        },
+        updateDbKeyspace: {
+          type: "boolean",
+          description: "Whether to immediately switch the active connection keyspace to this newly created keyspace",
+          default: false,
+        },
+      },
+      required: ["keyspaceName"],
+    },
+  },
+  {
+    name: "DropKeyspace",
+    description: "Drop a keyspace from the Astra DB database",
+    inputSchema: {
+      type: "object",
+      properties: {
+        keyspaceName: {
+          type: "string",
+          description: "Name of the keyspace to drop",
+        },
+      },
+      required: ["keyspaceName"],
+    },
+  },
+  {
+    name: "UseKeyspace",
+    description: "Switch the active working keyspace for subsequent queries",
+    inputSchema: {
+      type: "object",
+      properties: {
+        keyspaceName: {
+          type: "string",
+          description: "Name of the keyspace to switch to",
+        },
+      },
+      required: ["keyspaceName"],
+    },
+  },
+  {
+    name: "GetCurrentKeyspace",
+    description: "Get the currently active keyspace",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+
+  // Admin & Provider Discovery
+  {
+    name: "ListEmbeddingProviders",
+    description: "List all available vector embedding providers and models supported by Astra DB Vectorize",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "ListRerankingProviders",
+    description: "List all available reranking providers and models supported by Astra DB for hybrid search",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "GetDatabaseInfo",
+    description: "Get database environment metadata (id, name, region, environment, status, keyspaces)",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+
+  // Utilities
   {
     name: "VectorSearch",
     description: "Search for records in a collection using vector similarity",
@@ -437,20 +1063,6 @@ export const tools: Tool[] = [
     },
   },
   {
-    name: "EstimateDocumentCount",
-    description: "Estimate the number of documents in a collection using a fast, approximate count method",
-    inputSchema: {
-      type: "object",
-      properties: {
-        collectionName: {
-          type: "string",
-          description: "Name of the collection to estimate document count for",
-        },
-      },
-      required: ["collectionName"],
-    },
-  },
-  {
     name: "HelpAddToClient",
     description: "Help the user add the Astra DB client to their MCP client",
     inputSchema: {
@@ -459,10 +1071,4 @@ export const tools: Tool[] = [
       required: [],
     },
   },
-] as const satisfies {
-  name: ToolName;
-  description: string;
-  inputSchema: Schema;
-}[];
-
-// Made with Bob
+] as const satisfies Tool[];

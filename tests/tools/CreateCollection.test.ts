@@ -38,8 +38,8 @@ describe("CreateCollection Tool", () => {
     expect(mockDb.createCollection).toHaveBeenCalledWith("new_collection", {
       vector: {
         dimension: 1536,
-        metric: "cosine"
-      }
+        metric: "cosine",
+      },
     });
 
     // Verify the result
@@ -80,8 +80,8 @@ describe("CreateCollection Tool", () => {
       {
         vector: {
           dimension: 768,
-          metric: "cosine"
-        }
+          metric: "cosine",
+        },
       }
     );
 
@@ -105,8 +105,8 @@ describe("CreateCollection Tool", () => {
       {
         vector: {
           dimension: 1536,
-          metric: "euclidean"
-        }
+          metric: "euclidean",
+        },
       }
     );
 
@@ -115,5 +115,3 @@ describe("CreateCollection Tool", () => {
     expect(result.message).toContain("custom_metric_collection");
   });
 });
-
-// Made with Bob

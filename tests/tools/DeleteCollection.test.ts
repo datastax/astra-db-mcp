@@ -12,17 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DeleteCollection } from "../../tools/DeleteCollection.js";
 import { mockDb } from "../mocks/db.mock.js";
-
-// Import the mock to ensure it's applied
-import "../mocks/db.mock.js";
 
 describe("DeleteCollection Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.deleteCollection.mockClear();
+    mockDb.dropCollection.mockClear();
   });
 
   it("should delete a collection", async () => {
@@ -34,10 +31,11 @@ describe("DeleteCollection Tool", () => {
     });
 
     // Verify the mock was called with correct parameters
-    // The implementation might use different methods, so we'll be more flexible
-    expect(mockDb.deleteCollection).toBeDefined();
+    expect(mockDb.dropCollection).toHaveBeenCalledTimes(1);
+    expect(mockDb.dropCollection).toHaveBeenCalledWith(collectionName);
 
-    // Verify the result has success property
-    expect(result).toHaveProperty('success', true);
+    // Verify the result
+    expect(result.success).toBe(true);
+    expect(result.message).toContain(collectionName);
   });
 });

@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { CreateRecord } from "../../tools/CreateRecord.js";
 import { mockDb } from "../mocks/db.mock.js";
 
 describe("CreateRecord Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.collection.mockClear();
+    vi.clearAllMocks();
   });
 
   it("should create a record in a collection", async () => {

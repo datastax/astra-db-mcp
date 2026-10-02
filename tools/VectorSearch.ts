@@ -65,4 +65,3 @@ export async function VectorSearch({
   return sanitizeRecordData(results);
 }
 
-// Made with Bob

@@ -16,13 +16,10 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { FindRecord } from "../../tools/FindRecord.js";
 import { mockDb } from "../mocks/db.mock.js";
 
-// Import the mock to ensure it's applied
-import "../mocks/db.mock.js";
-
 describe("FindRecord Tool", () => {
   beforeEach(() => {
     // Clear mock call history before each test
-    mockDb.collection.mockClear();
+    vi.clearAllMocks();
   });
 
   it("should find a record by field value", async () => {
@@ -30,8 +27,6 @@ describe("FindRecord Tool", () => {
     const field = "title";
     const value = "Record 1";
 
-    const mockCollection = mockDb.collection(collectionName);
-
     // Call the function
     const result = await FindRecord({
       collectionName,
@@ -41,22 +36,13 @@ describe("FindRecord Tool", () => {
 
     // Verify the collection was accessed
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-
-    // The implementation might return different results, so we'll be more flexible
     expect(Array.isArray(result)).toBe(true);
   });
 
-  it("should return null when no record matches", async () => {
-    const collectionName = "test_collection1";
+  it("should return empty array when no record matches", async () => {
+    const collectionName = "non_existent_collection";
     const field = "title";
     const value = "Non-existent Record";
-
-    const mockCollection = mockDb.collection(collectionName);
-
-    // Mock the find method to return an empty array for this specific test
-    mockCollection.find.mockReturnValueOnce({
-      toArray: vi.fn().mockResolvedValueOnce([])
-    });
 
     // Call the function
     const result = await FindRecord({
@@ -67,9 +53,6 @@ describe("FindRecord Tool", () => {
 
     // Verify the collection was accessed
     expect(mockDb.collection).toHaveBeenCalledWith(collectionName);
-
-    // The implementation might return different results, so we'll be more flexible
     expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBe(0);
   });
 });

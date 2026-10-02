@@ -14,28 +14,69 @@
 
 import { db } from "../util/db.js";
 
-type VectorMetric = "cosine" | "euclidean" | "dot_product";
+export type VectorMetric = "cosine" | "euclidean" | "dot_product";
 
-export async function CreateCollection(params: {
+export interface CreateCollectionParams {
   collectionName: string;
   vector?: boolean;
   dimension?: number;
   metric?: VectorMetric;
-}) {
-  const { 
-    collectionName, 
-    vector = true, 
+  service?: {
+    provider: string;
+    modelName: string;
+    parameters?: Record<string, any>;
+    authentication?: Record<string, any>;
+  };
+  defaultId?: {
+    type: "objectId" | "uuid" | "uuidv6" | "uuidv7" | "default";
+  };
+  indexing?: {
+    allow?: string[];
+    deny?: string[];
+  };
+}
+
+export async function CreateCollection(params: CreateCollectionParams) {
+  const {
+    collectionName,
+    vector = true,
     dimension = 1536,
-    metric = "cosine" as VectorMetric
+    metric = "cosine",
+    service,
+    defaultId,
+    indexing,
   } = params;
 
-  if (vector) {
-    await db.createCollection(collectionName, {
-      vector: {
-        dimension: dimension,
-        metric: metric
+  const options: Record<string, any> = {};
+
+  if (service) {
+    options.vector = {
+      service: {
+        provider: service.provider,
+        modelName: service.modelName,
+        ...(service.parameters ? { parameters: service.parameters } : {}),
+        ...(service.authentication ? { authentication: service.authentication } : {}),
       },
-    });
+      ...(dimension ? { dimension } : {}),
+      metric,
+    };
+  } else if (vector) {
+    options.vector = {
+      dimension,
+      metric,
+    };
+  }
+
+  if (defaultId) {
+    options.defaultId = defaultId;
+  }
+
+  if (indexing) {
+    options.indexing = indexing;
+  }
+
+  if (Object.keys(options).length > 0) {
+    await db.createCollection(collectionName, options as any);
   } else {
     await db.createCollection(collectionName);
   }
@@ -46,4 +87,3 @@ export async function CreateCollection(params: {
   };
 }
 
-// Made with Bob
