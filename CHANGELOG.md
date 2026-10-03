@@ -2,10 +2,19 @@
 
 ## [Unreleased](https://github.com/datastax/astra-db-mcp/tree/HEAD)
 
-[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.3.2...HEAD)
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.3.3...HEAD)
 
 **Implemented enhancements:**
 
+- ci: upgrade Node to 22 and add engines field with npm pin [\#46](https://github.com/datastax/astra-db-mcp/pull/46) ([msmygit](https://github.com/msmygit))
+
+## [v1.3.3](https://github.com/datastax/astra-db-mcp/tree/v1.3.3) (2026-10-02)
+
+[Full Changelog](https://github.com/datastax/astra-db-mcp/compare/v1.3.2...v1.3.3)
+
+**Implemented enhancements:**
+
+- chore\(release\): Bump tag version and update changelog [\#45](https://github.com/datastax/astra-db-mcp/pull/45) ([github-actions[bot]](https://github.com/apps/github-actions))
 - ci: upgrade Node to 22 and add engines field with npm pin [\#44](https://github.com/datastax/astra-db-mcp/pull/44) ([msmygit](https://github.com/msmygit))
 
 ## [v1.3.2](https://github.com/datastax/astra-db-mcp/tree/v1.3.2) (2026-10-02)
