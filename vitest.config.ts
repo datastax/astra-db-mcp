@@ -20,6 +20,10 @@ export default defineConfig({
     environment: "node",
     include: ["**/*.test.ts"],
     setupFiles: ["./tests/setup.ts"],
+    // Reuse workers across test files instead of spawning one per file (vitest v5
+    // default). Safe here because every test file uses vi.clearAllMocks() in
+    // beforeEach rather than relying on module-level isolation.
+    isolate: false,
     coverage: {
       reporter: ["text", "json", "html"],
     },
