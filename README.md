@@ -19,7 +19,7 @@ Here's how you can add this server to your MCP client.
 
 For **[IBM Bob](https://bob.ibm.com)** IDE, follow the procedure at [this documentation](https://bob.ibm.com/docs/ide/configuration/mcp/mcp-in-bob).
 
-![IBM Bob IDE](./docs/img/ibm_bob_mcp.png)
+![IBM Bob IDE](https://github.com/datastax/astra-db-mcp/raw/main/docs/img/ibm_bob_mcp.png)
 
 For **[IBM Bob](https://bob.ibm.com)** Shell, follow the procedure at [this documentation](https://bob.ibm.com/docs/shell/configuration/mcp/mcp-bobshell#transport-types).
 
