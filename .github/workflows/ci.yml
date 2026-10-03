@@ -20,6 +20,12 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      - name: Install npm >=12.0.0
+        # actions/setup-node does not support an npm-version input — the bundled npm
+        # for the node 22 runner image can be as old as 10.x. npm >=12.0.0 is required
+        # by the engines field in package.json (npm stage was introduced in npm v12).
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         # --legacy-peer-deps: @modelcontextprotocol/inspector has a transitive peer
         # dep chain (inspector → vite@^8 → esbuild@^0.27||^0.28) that conflicts
